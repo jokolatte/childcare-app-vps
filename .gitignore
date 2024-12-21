@@ -1,0 +1,10 @@
+# Python
+backend/venv/
+__pycache__/
+
+# Node.js
+frontend/node_modules/
+
+# General
+*.log
+.DS_Store
