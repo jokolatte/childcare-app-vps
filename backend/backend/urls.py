@@ -15,10 +15,16 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include  # Ensure 'include' is imported
+from django.urls import path, include
+from django.http import JsonResponse
+
+def root_view(request):
+    return JsonResponse({"message": "Welcome to the Childcare App!"})
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('core.urls')),  # This includes the core app's URLs
+    path('api/test/', include('core.urls')),  # This maps to your test API
+    path('', root_view, name='root_view'),  # Add this line for the root URL
 ]
+
 
