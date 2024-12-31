@@ -82,7 +82,7 @@ DATABASES = {
         'NAME': 'childcare_app',  # Replace with your database name
         'USER': 'postgres',       # Replace with your PostgreSQL username
         'PASSWORD': 'Kleenex2000',  # Replace with your PostgreSQL password
-        'HOST': 'localhost',     # Default is localhost
+        'HOST': 'db',     # Default is localhost
         'PORT': '5432',          # Default PostgreSQL port
     }
 }
