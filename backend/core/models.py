@@ -70,7 +70,7 @@ class Payment(models.Model):
     notes = models.TextField(blank=True, null=True)
 
     def __str__(self):
-        return f"Payment {self.id} of ${self.amount} by Family {self.family.id}"
+        return f"Payment {self.id} of ${self.amount_paid} by Family {self.family.id}"
 
 
 class Invoice(models.Model):
