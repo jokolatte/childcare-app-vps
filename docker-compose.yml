@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:16
+    container_name: childcare-db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Kleenex2000
+      POSTGRES_DB: childcare_app
+    ports:
+      - "5433:5432"
+
+  backend:
+    build:
+      context: ./backend
+    container_name: childcare-backend
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=True
+      - DB_NAME=childcare_app
+      - DB_USER=postgres
+      - DB_PASSWORD=Kleenex2000
+      - DB_HOST=db
+      - DB_PORT=5432
+    depends_on:
+      - db
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: childcare-frontend
+    volumes:
+      - ./frontend:/app
+    ports:
+      - "3000:3000"
+    stdin_open: true
+    tty: true
+    depends_on:
+      - backend
+    command: ["npm", "start"]
+
+volumes:
+  postgres_data:
