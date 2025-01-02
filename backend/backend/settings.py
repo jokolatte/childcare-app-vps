@@ -27,7 +27,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'core',
     'corsheaders',
-    'rest_framework',  # Add this line
+    'rest_framework',  
+    'django_filters',
+    'drf_yasg',
 ]
 
 MIDDLEWARE = [
@@ -71,7 +73,7 @@ DATABASES = {
         'NAME': 'childcare_app',  # Replace with your database name
         'USER': 'postgres',       # Replace with your PostgreSQL username
         'PASSWORD': 'Kleenex2000',  # Replace with your PostgreSQL password
-        'HOST': 'db',     # Default is localhost
+        'HOST': 'localhost',     # Default is localhost
         'PORT': '5432',          # Default PostgreSQL port
     }
 }
@@ -130,5 +132,19 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PARSER_CLASSES': [
         'rest_framework.parsers.JSONParser',
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',  # Pagination
+    'PAGE_SIZE': 10,  # Number of records per page
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],  # Filtering
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.UserRateThrottle',
+        'rest_framework.throttling.AnonRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'user': '1000/day',  # Registered users: 1000 requests per day
+        'anon': '100/hour',  # Anonymous users: 100 requests per hour
+    },    
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
 }
