@@ -1,39 +1,32 @@
 import React from 'react';
-import { useState } from 'react';
-import reactLogo from './assets/react.svg';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 import TestAPI from './TestAPI';
+import ClassroomForm from './components/ClassroomForm.jsx';
 
 function App() {
-  const [count, setCount] = useState(0);
-
   return (
-    <>
+    <Router>
       <div>
-        <a href="https://vite.dev" target="_blank" rel="noopener noreferrer">
-          <img src={reactLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank" rel="noopener noreferrer">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+        <h1>Childcare App</h1>
+        <nav>
+          <ul>
+            <li>
+              <a href="/">Home</a>
+            </li>
+            <li>
+              <a href="/classrooms">Classroom Form</a>
+            </li>
+          </ul>
+        </nav>
+        <hr />
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-      <div>
-        <h2>Test API Integration</h2>
-        <TestAPI />
-      </div>
-    </>
+      <Routes>
+        <Route path="/" element={<div>Welcome to the Childcare App</div>} />
+        <Route path="/classrooms" element={<ClassroomForm />} />
+        <Route path="/test-api" element={<div><h2>Test API Integration</h2><TestAPI /></div>} />
+      </Routes>
+    </Router>
   );
 }
 
