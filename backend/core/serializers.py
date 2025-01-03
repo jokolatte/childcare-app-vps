@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from core.models import Family, Child, Classroom, Attendance, Payment, Invoice, GovernmentFunding
+from core.models import Family, Child, Classroom, Attendance, Payment, Invoice, GovernmentFunding, AlternativeCapacity
 
 class FamilySerializer(serializers.ModelSerializer):
     class Meta:
@@ -11,10 +11,17 @@ class ChildSerializer(serializers.ModelSerializer):
         model = Child
         fields = '__all__'
 
+class AlternativeCapacitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AlternativeCapacity
+        fields = ['id', 'classroom', 'program_type', 'max_capacity']
+
 class ClassroomSerializer(serializers.ModelSerializer):
+    alternative_capacities = AlternativeCapacitySerializer(many=True, read_only=True)
+    
     class Meta:
         model = Classroom
-        fields = '__all__'
+        fields = ['id', 'classroom_name', 'program_type', 'max_capacity', 'alternative_capacities', 'notes']
 
 class AttendanceSerializer(serializers.ModelSerializer):
     class Meta:

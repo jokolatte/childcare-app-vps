@@ -37,11 +37,27 @@ class Child(models.Model):
 
 
 class Classroom(models.Model):
-    name = models.CharField(max_length=255)
-    capacity = models.IntegerField()
+    classroom_name = models.CharField(max_length=100)
+    program_type = models.CharField(max_length=50, choices=[
+        ('Infant', 'Infant'),
+        ('Toddler', 'Toddler'),
+        ('Preschool', 'Preschool'),
+    ])
+    max_capacity = models.PositiveIntegerField()
+    notes = models.TextField(null=True, blank=True)
 
     def __str__(self):
-        return self.name
+        return self.classroom_name
+
+
+class AlternativeCapacity(models.Model):
+    classroom = models.ForeignKey(Classroom, on_delete=models.CASCADE, related_name='alternative_capacities')
+    program_type = models.CharField(max_length=100)
+    max_capacity = models.IntegerField()
+
+    def __str__(self):
+        return f"{self.classroom.classroom_name} - {self.program_type} ({self.max_capacity})"  # Update `__str__`
+
 
 
 class Attendance(models.Model):

@@ -4,8 +4,8 @@ from rest_framework import generics
 from rest_framework.filters import SearchFilter
 from rest_framework.filters import OrderingFilter
 from rest_framework.permissions import IsAuthenticated
-from core.models import Family, Child, Classroom, Attendance, Payment, Invoice, GovernmentFunding
-from core.serializers import FamilySerializer, ChildSerializer, ClassroomSerializer, AttendanceSerializer, PaymentSerializer, InvoiceSerializer, GovernmentFundingSerializer
+from core.models import Family, Child, Classroom, Attendance, Payment, Invoice, GovernmentFunding, AlternativeCapacity
+from core.serializers import FamilySerializer, ChildSerializer, ClassroomSerializer, AttendanceSerializer, PaymentSerializer, InvoiceSerializer, GovernmentFundingSerializer, AlternativeCapacitySerializer
 
 
 # Test API Endpoint
@@ -54,6 +54,11 @@ class ClassroomListCreateView(generics.ListCreateAPIView):
 class ClassroomRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Classroom.objects.all()
     serializer_class = ClassroomSerializer
+
+
+class AlternativeCapacityListCreateView(generics.ListCreateAPIView):
+    queryset = AlternativeCapacity.objects.all()
+    serializer_class = AlternativeCapacitySerializer
 
 
 # CRUD views for Attendance
