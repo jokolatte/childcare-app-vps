@@ -1,7 +1,8 @@
 
 import React, { useState, useEffect } from "react";
 import ClassroomListView from "./ClassroomListView";
-import API_BASE_URL from "../config"; 
+
+const API_BASE_URL = "http://localhost:8000";
 
 interface AlternativeCapacity {
   program_type: string;
@@ -28,7 +29,7 @@ const ClassroomForm: React.FC = () => {
   const [showAlternativeCapacity, setShowAlternativeCapacity] = useState(false);
 
   useEffect(() => {
-    fetch(`http://localhost:8000/api/classrooms/`) // Use the full URL
+    fetch(`http://localhost:8000/api/classrooms/`)
       .then((response) => {
         if (!response.ok) {
           throw new Error("Failed to fetch classrooms");
@@ -37,19 +38,19 @@ const ClassroomForm: React.FC = () => {
       })
       .then((data) => {
         console.log("Fetched classrooms:", data); // Debugging log
-        setClassrooms(data.results); // Update with the results array
+        setClassrooms(data.results || data); // Handle results array or raw data
       })
       .catch((error) => console.error("Error fetching classrooms:", error));
   }, []);
-  
-
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const method = editingId ? "PUT" : "POST";
     const url = editingId
-      ? `${API_BASE_URL}/api/classrooms/${editingId}/`
-      : "${API_BASE_URL}/api/classrooms/";
+      ? `http://localhost:8000/api/classrooms/${editingId}/`
+      : `http://localhost:8000/api/classrooms/`;
+
+    console.log("Submitting to URL:", url); // Debugging log
 
     fetch(url, {
       method,
@@ -58,15 +59,22 @@ const ClassroomForm: React.FC = () => {
       },
       body: JSON.stringify(formState),
     })
-      .then((response) => response.json())
-      .then((data: Classroom) => {
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Failed to submit classroom");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log("Classroom submitted:", data); // Debugging log
         setClassrooms((prev) =>
           editingId
             ? prev.map((item) => (item.id === editingId ? data : item))
             : [...prev, data]
         );
         resetForm();
-      });
+      })
+      .catch((error) => console.error("Error submitting classroom:", error));
   };
 
   const handleEdit = (classroom: Classroom) => {
