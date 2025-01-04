@@ -138,7 +138,7 @@ const ClassroomForm: React.FC = () => {
 
   return (
     <div>
-      <h2>{editingId ? "Edit Classroom" : "Create Classroom"}</h2>
+      <h2>{editingId ? "Edit Classroom" : "Create/Edit Classroom"}</h2>
       <form onSubmit={handleSubmit}>
         <div>
           <label>Classroom Name:</label>
