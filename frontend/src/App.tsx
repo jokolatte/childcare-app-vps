@@ -1,8 +1,8 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'; // Use Link instead of <a>
 import './App.css';
 import TestAPI from './TestAPI';
-import ClassroomForm from './components/ClassroomForm.jsx';
+import ClassroomForm from './components/ClassroomForm';
 
 function App() {
   return (
@@ -12,10 +12,10 @@ function App() {
         <nav>
           <ul>
             <li>
-              <a href="/">Home</a>
+              <Link to="/">Home</Link> {/* Replaced <a> with <Link> */}
             </li>
             <li>
-              <a href="/classrooms">Classroom Form</a>
+              <Link to="/classrooms">Classroom Form</Link>
             </li>
           </ul>
         </nav>
@@ -24,7 +24,15 @@ function App() {
       <Routes>
         <Route path="/" element={<div>Welcome to the Childcare App</div>} />
         <Route path="/classrooms" element={<ClassroomForm />} />
-        <Route path="/test-api" element={<div><h2>Test API Integration</h2><TestAPI /></div>} />
+        <Route
+          path="/test-api"
+          element={
+            <div>
+              <h2>Test API Integration</h2>
+              <TestAPI />
+            </div>
+          }
+        />
       </Routes>
     </Router>
   );

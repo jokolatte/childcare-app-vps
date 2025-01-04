@@ -1,5 +1,5 @@
 import React from "react";
-import ClassroomForm from "../components/ClassroomForm.jsx";
+import ClassroomForm from "../components/ClassroomForm.tsx";
 
 const ClassroomsPage = () => {
   return (

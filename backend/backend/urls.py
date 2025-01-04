@@ -7,6 +7,7 @@ def root_view(request):
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/', include('core.urls')),
     path('', include('core.urls')),  # Include core URLs directly without an extra prefix
     path('', root_view, name='root_view'),  # Root URL response
 ]
