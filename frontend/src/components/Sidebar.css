@@ -1,6 +1,6 @@
 .sidebar {
     width: 250px;
-    background: #2c9bb3;
+    background: #2c9bb3; /* Sidebar background color */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -9,11 +9,11 @@
     overflow-y: auto;
     transition: all 0.3s ease-in-out;
 }
-  
+
 .sidebar.collapsed {
     width: 80px;
 }
-  
+
 .sidebar .logo img {
     display: block;
     margin: 0 auto;
@@ -21,7 +21,7 @@
     max-height: 80px;
     object-fit: contain;
 }
-  
+
 .sidebar .collapse-button {
     display: flex;
     justify-content: center;
@@ -35,64 +35,90 @@
     text-align: center;
     transition: background-color 0.2s;
 }
-  
+
 .sidebar .collapse-button:hover {
     background: #1c5e6d;
 }
-  
+
 .sidebar .menu {
     list-style: none;
     padding: 0;
     margin: 0;
     width: 100%;
 }
-  
+
 .sidebar .menu-item {
     padding: 10px 15px;
     cursor: pointer;
     border-radius: 5px;
     transition: background-color 0.2s;
 }
-  
+
 .sidebar .menu-item-container {
     display: flex;
     align-items: center;
 }
-  
+
 .sidebar .icon {
     margin-right: 15px;
     font-size: 1.2rem;
 }
-  
+
+.sidebar.collapsed .menu-item-container {
+    justify-content: center; /* Centers the icon horizontally */
+}
+
 .sidebar.collapsed .icon {
-    margin-right: 0;
+    margin: 0; /* Removes extra margin that causes misalignment */
+    font-size: 1.5rem; /* Adjust icon size for better visibility (optional) */
+    display: flex;
+    justify-content: center;
+    align-items: center; /* Ensures the icon is perfectly centered */
 }
-  
+
 .sidebar.collapsed .menu-item span {
-    display: none;
+    display: flex;
 }
-  
+
+/* Submenu container with sidebar background color */
 .sidebar .sub-menu {
     list-style: none;
     padding-left: 20px;
     margin-top: 10px;
+    background: #2c9bb3; /* Match sidebar background */
+    border-radius: 5px; /* Optional rounded edges */
+    padding: 10px; /* Add padding for spacing */
 }
-  
-.sidebar .sub-menu-item {
+
+/* Submenu visibility in collapsed mode */
+.sidebar.collapsed .sub-menu {
+    position: absolute; /* Overlay the submenu on top */
+    left: 80px; /* Align next to the collapsed menu */
+    background: #2c9bb3; /* Same as sidebar background */
+    color: white; /* Ensure text is visible */
+    border-radius: 5px; /* Optional rounded edges */
+    padding: 10px;
+    z-index: 1000; /* Bring it to the front */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Optional shadow for depth */
+}
+
+/* Adjust submenu items hover effect */
+.sidebar .sub-menu-item:hover {
+    background: rgba(255, 255, 255, 0.1); /* Subtle hover effect */
+    border-radius: 5px; /* Optional rounded edges */
+}
+
+/.sidebar .sub-menu-item {
     padding: 5px 10px;
     cursor: pointer;
 }
 
-/* Style for all links in the sidebar */
-.sidebar .menu-item a,
-.sidebar .sub-menu-item a {
-    color: white; /* Ensure links are white */
+/* Prevent purple links for submenu items */
+.sidebar .sub-menu a {
+    color: white; /* Keep links white */
     text-decoration: none; /* Remove underline */
 }
 
-/* Add a hover effect for the links */
-.sidebar .menu-item a:hover,
-.sidebar .sub-menu-item a:hover {
-    color: #c0e7f3; /* Light blue hover effect */
-    text-decoration: underline; /* Optional hover underline */
+.sidebar .sub-menu a:hover {
+    text-decoration: none; /* Optional hover effect */
 }
