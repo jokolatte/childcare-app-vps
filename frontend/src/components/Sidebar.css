@@ -8,21 +8,21 @@
     height: 100vh;
     overflow-y: auto;
     transition: all 0.3s ease-in-out;
-  }
+}
   
-  .sidebar.collapsed {
+.sidebar.collapsed {
     width: 80px;
-  }
+}
   
-  .sidebar .logo img {
+.sidebar .logo img {
     display: block;
     margin: 0 auto;
     max-width: 100%;
     max-height: 80px;
     object-fit: contain;
-  }
+}
   
-  .sidebar .collapse-button {
+.sidebar .collapse-button {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -34,52 +34,65 @@
     cursor: pointer;
     text-align: center;
     transition: background-color 0.2s;
-  }
+}
   
-  .sidebar .collapse-button:hover {
+.sidebar .collapse-button:hover {
     background: #1c5e6d;
-  }
+}
   
-  .sidebar .menu {
+.sidebar .menu {
     list-style: none;
     padding: 0;
     margin: 0;
     width: 100%;
-  }
+}
   
-  .sidebar .menu-item {
+.sidebar .menu-item {
     padding: 10px 15px;
     cursor: pointer;
     border-radius: 5px;
     transition: background-color 0.2s;
-  }
+}
   
-  .sidebar .menu-item-container {
+.sidebar .menu-item-container {
     display: flex;
     align-items: center;
-  }
+}
   
-  .sidebar .icon {
+.sidebar .icon {
     margin-right: 15px;
     font-size: 1.2rem;
-  }
+}
   
-  .sidebar.collapsed .icon {
+.sidebar.collapsed .icon {
     margin-right: 0;
-  }
+}
   
-  .sidebar.collapsed .menu-item span {
-    display: flex;
-  }
+.sidebar.collapsed .menu-item span {
+    display: none;
+}
   
-  .sidebar .sub-menu {
+.sidebar .sub-menu {
     list-style: none;
     padding-left: 20px;
     margin-top: 10px;
-  }
+}
   
-  .sidebar .sub-menu-item {
+.sidebar .sub-menu-item {
     padding: 5px 10px;
     cursor: pointer;
-  }
-  
+}
+
+/* Style for all links in the sidebar */
+.sidebar .menu-item a,
+.sidebar .sub-menu-item a {
+    color: white; /* Ensure links are white */
+    text-decoration: none; /* Remove underline */
+}
+
+/* Add a hover effect for the links */
+.sidebar .menu-item a:hover,
+.sidebar .sub-menu-item a:hover {
+    color: #c0e7f3; /* Light blue hover effect */
+    text-decoration: underline; /* Optional hover underline */
+}
