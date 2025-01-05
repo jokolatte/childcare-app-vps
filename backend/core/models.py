@@ -90,22 +90,37 @@ class Payment(models.Model):
 
 
 class Invoice(models.Model):
-    family = models.ForeignKey(Family, on_delete=models.CASCADE, related_name="invoices")
-    child = models.ForeignKey(Child, on_delete=models.CASCADE, related_name="invoices", blank=True, null=True)
-    date_issued = models.DateField()
+    invoice_id = models.AutoField(primary_key=True)
+    date_issued = models.DateField(auto_now_add=True)
     due_date = models.DateField()
-    due_amount = models.DecimalField(max_digits=10, decimal_places=2)
-    subsidy_amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    paid_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
-    payment_status = models.CharField(max_length=20, choices=[
-        ('Paid', 'Paid'),
-        ('Unpaid', 'Unpaid'),
-        ('Partially Paid', 'Partially Paid'),
-    ], default='Unpaid')
+    full_tuition = models.DecimalField(max_digits=10, decimal_places=2)
+    subsidy_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    parent_portion = models.DecimalField(max_digits=10, decimal_places=2)
+    paid_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    payment_status = models.CharField(
+        max_length=20,
+        choices=[
+            ("Unpaid", "Unpaid"),
+            ("Partially Paid", "Partially Paid"),
+            ("Paid", "Paid"),
+        ],
+        default="Unpaid",
+    )
     notes = models.TextField(blank=True, null=True)
+    child = models.ForeignKey("Child", on_delete=models.CASCADE)
+    family = models.ForeignKey("Family", on_delete=models.CASCADE)
+
+    def clean(self):
+        # Ensure full_tuition equals the sum of parent_portion and subsidy_amount
+        if self.parent_portion + self.subsidy_amount != self.full_tuition:
+            raise ValidationError("Full tuition must equal the sum of parent and subsidy amounts.")
+
+        # Ensure paid_amount does not exceed the parent_portion
+        if self.paid_amount > self.parent_portion:
+            raise ValidationError("Paid amount cannot exceed the parent portion.")
 
     def __str__(self):
-        return f"Invoice {self.id} for Family {self.family.id}"
+        return f"Invoice {self.invoice_id} for Child {self.child}"
 
 class GovernmentFunding(models.Model):
     funding_source = models.CharField(max_length=255)
@@ -117,3 +132,35 @@ class GovernmentFunding(models.Model):
 
     def __str__(self):
         return f"{self.funding_source} - {self.stream}"
+
+class Deposit(models.Model):
+    DEPOSIT_STATUS_CHOICES = [
+        ('Owing', 'Owing'),
+        ('Paid', 'Paid'),
+        ('Refunded', 'Refunded'),
+        ('Forfeited', 'Forfeited'),
+    ]
+
+    deposit_id = models.AutoField(primary_key=True)
+    child = models.ForeignKey('Child', on_delete=models.CASCADE, related_name='deposits')
+    deposit_type = models.CharField(max_length=50, choices=[('Security', 'Security'), ('FOB', 'FOB')])
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    status = models.CharField(max_length=20, choices=DEPOSIT_STATUS_CHOICES, default='Owing')
+    date_collected = models.DateField(null=True, blank=True)
+    date_refunded = models.DateField(null=True, blank=True)
+    notes = models.TextField(blank=True)
+
+    def __str__(self):
+        return f"{self.deposit_type} deposit for {self.child} ({self.status})"
+
+
+class Calendar(models.Model):
+    date = models.DateField(unique=True)
+    is_weekday = models.BooleanField(default=True)
+    is_stat_holiday = models.BooleanField(default=False)
+    stat_substitution_date = models.DateField(null=True, blank=True)  # New field
+    is_closed = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Date: {self.date}, Closed: {self.is_closed}"
+
