@@ -23,17 +23,38 @@ class Family(models.Model):
 
 
 class Child(models.Model):
-    family = models.ForeignKey(Family, on_delete=models.CASCADE, related_name="children")
-    name = models.CharField(max_length=255)
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
     date_of_birth = models.DateField()
+    enrollment_start_date = models.DateField()
+    enrollment_end_date = models.DateField(null=True, blank=True)  # New field
+    classroom = models.ForeignKey(
+        "Classroom",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="children",
+    )
+    family = models.ForeignKey(
+        "Family",
+        on_delete=models.CASCADE,
+        related_name="children",
+    )
+    fob_required = models.BooleanField(default=True)
+    notes = models.TextField(blank=True, null=True)
     allergy_info = models.TextField(blank=True, null=True)
     emergency_contact = models.TextField(blank=True, null=True)
-    start_date = models.DateField()
-    end_date = models.DateField(blank=True, null=True)
-    notes = models.TextField(blank=True, null=True)
+
+    def age_in_months_at_start(self):
+        if self.enrollment_start_date and self.date_of_birth:
+            return (
+                (self.enrollment_start_date.year - self.date_of_birth.year) * 12
+                + (self.enrollment_start_date.month - self.date_of_birth.month)
+            )
+        return None
 
     def __str__(self):
-        return f"Child {self.id}: {self.name}"
+        return f"{self.first_name} {self.last_name}"
 
 
 class Classroom(models.Model):

@@ -4,7 +4,6 @@ from .models import Family, Child, Classroom, Attendance, Payment, Invoice, Gove
 
 # Register models
 admin.site.register(Family)
-admin.site.register(Child)
 admin.site.register(Classroom)
 admin.site.register(Attendance)
 admin.site.register(Payment)
@@ -18,3 +17,17 @@ class CalendarAdmin(admin.ModelAdmin):
     list_display = ('date', 'is_stat_holiday', 'is_closed', 'stat_substitution_date')
     list_filter = ('is_stat_holiday', 'is_closed')
     search_fields = ('date',)
+
+@admin.register(Child)
+class ChildAdmin(admin.ModelAdmin):
+    list_display = (
+        "first_name",
+        "last_name",
+        "date_of_birth",
+        "enrollment_start_date",
+        "enrollment_end_date",  # Add this to the list
+        "classroom",
+        "family",
+        "fob_required",
+    )
+    search_fields = ("first_name", "last_name", "family__name")
