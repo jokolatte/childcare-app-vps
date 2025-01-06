@@ -4,7 +4,7 @@ from core.models import Family, Child, Classroom, Attendance, Payment, Invoice, 
 class FamilySerializer(serializers.ModelSerializer):
     class Meta:
         model = Family
-        fields = '__all__'
+        fields = ['id', 'parent_1_name']
 
 class ChildSerializer(serializers.ModelSerializer):
     class Meta:

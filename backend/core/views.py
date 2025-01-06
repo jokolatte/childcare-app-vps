@@ -6,12 +6,29 @@ from rest_framework.filters import OrderingFilter
 from rest_framework.permissions import IsAuthenticated
 from core.models import Family, Child, Classroom, Attendance, Payment, Invoice, GovernmentFunding, AlternativeCapacity
 from core.serializers import FamilySerializer, ChildSerializer, ClassroomSerializer, AttendanceSerializer, PaymentSerializer, InvoiceSerializer, GovernmentFundingSerializer, AlternativeCapacitySerializer
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
 
+class AddChildView(APIView):
+    def post(self, request):
+        serializer = ChildSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-# Test API Endpoint
-def test_api(request):
-    return JsonResponse({"message": "Hello from the backend!"})
+class ClassroomsListView(APIView):
+    def get(self, request):
+        classrooms = Classroom.objects.all()
+        serializer = ClassroomSerializer(classrooms, many=True)
+        return Response(serializer.data)
 
+class FamiliesListView(APIView):
+    def get(self, request):
+        families = Family.objects.all()
+        serializer = FamilySerializer(families, many=True)
+        return Response(serializer.data)
 
 # CRUD views for Family
 class FamilyListCreateView(generics.ListCreateAPIView):
