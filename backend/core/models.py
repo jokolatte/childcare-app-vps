@@ -188,13 +188,13 @@ class Calendar(models.Model):
 class SubsidyRate(models.Model):
     program_type = models.CharField(max_length=50)  # Infant, Toddler, Preschool
     daily_tuition_rate = models.DecimalField(max_digits=6, decimal_places=2)  # Full daily tuition
-    parent_daily_cap = models.DecimalField(max_digits=6, decimal_places=2)  # Max parent pays per day
-    government_daily_subsidy = models.DecimalField(max_digits=6, decimal_places=2)  # Subsidy amount
+    daily_parent_rate = models.DecimalField(max_digits=6, decimal_places=2)  # Max parent pays per day
+    daily_CWELCCA_rate = models.DecimalField(max_digits=6, decimal_places=2)  # Daily subsidy amount
 
     def save(self, *args, **kwargs):
         # Automatically calculate subsidy if not provided
-        if not self.government_daily_subsidy:
-            self.government_daily_subsidy = self.daily_tuition_rate - self.parent_daily_cap
+        if not self.daily_CWELCCA_rate:
+            self.daily_CWELCCA_rate = self.daily_tuition_rate - self.daily_parent_rate
         super().save(*args, **kwargs)
 
     def __str__(self):

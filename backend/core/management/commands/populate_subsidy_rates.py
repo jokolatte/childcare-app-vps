@@ -7,19 +7,19 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         subsidy_rates = [
-            {"program_type": "Infant", "daily_tuition_rate": 110.19, "parent_daily_cap": 22},
-            {"program_type": "Toddler", "daily_tuition_rate": 92.31, "parent_daily_cap": 22},
-            {"program_type": "Preschool", "daily_tuition_rate": 74.36, "parent_daily_cap": 22},
+            {"program_type": "Infant", "daily_tuition_rate": 110.19, "daily_parent_rate": 22},
+            {"program_type": "Toddler", "daily_tuition_rate": 92.31, "daily_parent_rate": 22},
+            {"program_type": "Preschool", "daily_tuition_rate": 74.36, "daily_parent_rate": 22},
         ]
 
         for rate in subsidy_rates:
-            government_daily_subsidy = rate["daily_tuition_rate"] - rate["parent_daily_cap"]
+            daily_CWELCCA_rate = rate["daily_tuition_rate"] - rate["daily_parent_rate"]
             SubsidyRate.objects.update_or_create(
                 program_type=rate["program_type"],
                 defaults={
                     "daily_tuition_rate": rate["daily_tuition_rate"],
-                    "parent_daily_cap": rate["parent_daily_cap"],
-                    "government_daily_subsidy": government_daily_subsidy,
+                    "daily_parent_rate": rate["daily_parent_rate"],
+                    "daily_CWELCCA_rate": daily_CWELCCA_rate,
                 },
             )
 
