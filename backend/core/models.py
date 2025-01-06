@@ -111,7 +111,7 @@ class Payment(models.Model):
 
 
 class Invoice(models.Model):
-    invoice_id = models.AutoField(primary_key=True)
+    id = models.AutoField(primary_key=True)
     date_issued = models.DateField(auto_now_add=True)
     due_date = models.DateField()
     full_tuition = models.DecimalField(max_digits=10, decimal_places=2)
@@ -141,7 +141,7 @@ class Invoice(models.Model):
             raise ValidationError("Paid amount cannot exceed the parent portion.")
 
     def __str__(self):
-        return f"Invoice {self.invoice_id} for Child {self.child}"
+        return f"Invoice {self.id} for Child {self.child}"
 
 class GovernmentFunding(models.Model):
     funding_source = models.CharField(max_length=255)
@@ -162,7 +162,6 @@ class Deposit(models.Model):
         ('Forfeited', 'Forfeited'),
     ]
 
-    deposit_id = models.AutoField(primary_key=True)
     child = models.ForeignKey('Child', on_delete=models.CASCADE, related_name='deposits')
     deposit_type = models.CharField(max_length=50, choices=[('Security', 'Security'), ('FOB', 'FOB')])
     amount = models.DecimalField(max_digits=10, decimal_places=2)
