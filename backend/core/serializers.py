@@ -7,9 +7,15 @@ class FamilySerializer(serializers.ModelSerializer):
         fields = ['id', 'parent_1_name']
 
 class ChildSerializer(serializers.ModelSerializer):
+    family = serializers.PrimaryKeyRelatedField(queryset=Family.objects.all())
+    classroom = serializers.PrimaryKeyRelatedField(queryset=Classroom.objects.all())
     class Meta:
         model = Child
-        fields = '__all__'
+        fields = "__all__"
+    def validate_classroom(self, value):
+        if not Classroom.objects.filter(id=value.id).exists():
+            raise serializers.ValidationError("The specified classroom does not exist.")
+        return value
 
 class AlternativeCapacitySerializer(serializers.ModelSerializer):
     class Meta:

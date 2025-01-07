@@ -43,7 +43,6 @@ class Child(models.Model):
     fob_required = models.BooleanField(default=True)
     notes = models.TextField(blank=True, null=True)
     allergy_info = models.TextField(blank=True, null=True)
-    emergency_contact = models.TextField(blank=True, null=True)
 
     def age_in_months_at_start(self):
         if self.enrollment_start_date and self.date_of_birth:
