@@ -1,12 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import axios from "axios";
-import { useParams, useNavigate } from "react-router-dom";
-
-interface Classroom {
-    id: number;
-    classroom_name: string;
-}
 
 interface Child {
     id: number;
@@ -14,51 +8,72 @@ interface Child {
     last_name: string;
     date_of_birth: string;
     classroom: number;
-    fob_required: boolean;
+    family: number;
     notes: string;
+    fob_required: boolean;
     enrollment_start_date: string;
 }
 
 const EditChild: React.FC = () => {
-    const { id } = useParams<{ id: string }>(); // Get child ID from the URL
-    const navigate = useNavigate();
-    const { handleSubmit, control, reset, setValue } = useForm<Child>();
-    const [classrooms, setClassrooms] = useState<Classroom[]>([]);
-    const [successMessage, setSuccessMessage] = useState<string>("");
+    const { handleSubmit, control, reset, setValue } = useForm();
+    const [children, setChildren] = useState<Child[]>([]);
+    const [selectedChildId, setSelectedChildId] = useState<number | null>(null);
 
-    // Fetch classrooms and child data on load
+    // Fetch the list of children from the backend
     useEffect(() => {
-        // Fetch classrooms
-        axios.get("http://127.0.0.1:8000/api/classrooms-list/")
-            .then(response => setClassrooms(response.data.results || response.data))
-            .catch(error => console.error("Error fetching classrooms:", error));
+        axios
+            .get("http://127.0.0.1:8000/api/children-list/")
+            .then((response) => setChildren(response.data.results))
+            .catch((error) => console.error("Error fetching children:", error));
+    }, []);
 
-        // Fetch child data
-        axios.get(`http://127.0.0.1:8000/api/children/${id}/`)
-            .then(response => {
-                const childData = response.data;
-                Object.keys(childData).forEach((key) => {
-                    setValue(key as keyof Child, childData[key]);
-                });
-            })
-            .catch(error => console.error("Error fetching child data:", error));
-    }, [id, setValue]);
+    // Fetch child details when a child is selected
+    useEffect(() => {
+        if (selectedChildId) {
+            axios
+                .get(`http://127.0.0.1:8000/api/children/${selectedChildId}/`)
+                .then((response) => {
+                    const childData = response.data;
+                    // Populate form fields with child data
+                    Object.keys(childData).forEach((key) => setValue(key, childData[key]));
+                })
+                .catch((error) => console.error("Error fetching child details:", error));
+        }
+    }, [selectedChildId, setValue]);
 
     // Handle form submission
-    const onSubmit = (data: Child) => {
-        axios.put(`http://127.0.0.1:8000/api/children/${id}/`, data)
-            .then(response => {
-                setSuccessMessage("Child updated successfully!");
-                setTimeout(() => navigate("/children"), 2000); // Redirect after success
-            })
-            .catch(error => console.error("Error updating child:", error));
+    const onSubmit = (data: any) => {
+        if (selectedChildId) {
+            axios
+                .put(`http://127.0.0.1:8000/api/children/${selectedChildId}/`, data)
+                .then((response) => alert("Child updated successfully!"))
+                .catch((error) => console.error("Error updating child:", error));
+        } else {
+            alert("Please select a child first.");
+        }
     };
 
     return (
         <div style={{ padding: "2rem" }}>
             <h2>Edit Child</h2>
-            {successMessage && <p style={{ color: "green" }}>{successMessage}</p>}
-            <form onSubmit={handleSubmit(onSubmit)}>
+
+            {/* Dropdown to select a child */}
+            <div>
+                <label>Select a Child</label>
+                <select
+                    onChange={(e) => setSelectedChildId(Number(e.target.value))}
+                    value={selectedChildId || ""}
+                >
+                    <option value="">-- Select a Child --</option>
+                    {children.map((child) => (
+                        <option key={child.id} value={child.id}>
+                            {child.first_name} {child.last_name}
+                        </option>
+                    ))}
+                </select>
+            </div>
+
+            <form onSubmit={handleSubmit(onSubmit)} style={{ marginTop: "2rem" }}>
                 {/* First Name */}
                 <div>
                     <label>First Name</label>
@@ -99,32 +114,7 @@ const EditChild: React.FC = () => {
                         name="classroom"
                         control={control}
                         defaultValue=""
-                        render={({ field }) => (
-                            <select {...field}>
-                                <option value="">Select a Classroom</option>
-                                {classrooms.map((classroom) => (
-                                    <option key={classroom.id} value={classroom.id}>
-                                        {classroom.classroom_name}
-                                    </option>
-                                ))}
-                            </select>
-                        )}
-                    />
-                </div>
-
-                {/* FOB Required */}
-                <div>
-                    <label>FOB Required</label>
-                    <Controller
-                        name="fob_required"
-                        control={control}
-                        defaultValue={false}
-                        render={({ field }) => (
-                            <select {...field}>
-                                <option value="true">Yes</option>
-                                <option value="false">No</option>
-                            </select>
-                        )}
+                        render={({ field }) => <input {...field} />}
                     />
                 </div>
 
@@ -136,6 +126,17 @@ const EditChild: React.FC = () => {
                         control={control}
                         defaultValue=""
                         render={({ field }) => <textarea {...field} />}
+                    />
+                </div>
+
+                {/* FOB Required */}
+                <div>
+                    <label>FOB Required</label>
+                    <Controller
+                        name="fob_required"
+                        control={control}
+                        defaultValue={false}
+                        render={({ field }) => <input type="checkbox" {...field} />}
                     />
                 </div>
 
@@ -151,7 +152,9 @@ const EditChild: React.FC = () => {
                 </div>
 
                 {/* Submit Button */}
-                <button type="submit">Update Child</button>
+                <button type="submit" disabled={!selectedChildId}>
+                    Update Child
+                </button>
             </form>
         </div>
     );

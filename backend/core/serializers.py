@@ -17,6 +17,11 @@ class ChildSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("The specified classroom does not exist.")
         return value
 
+class ChildListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Child
+        fields = ['id', 'first_name', 'last_name']
+
 class AlternativeCapacitySerializer(serializers.ModelSerializer):
     class Meta:
         model = AlternativeCapacity

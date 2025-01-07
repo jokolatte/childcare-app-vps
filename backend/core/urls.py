@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import ClassroomsListView, FamiliesListView, ClassroomListCreateView, ClassroomRetrieveUpdateDestroyView, AddChildView
+from .views import ChildrenListView, ClassroomsListView, FamiliesListView, ClassroomListCreateView, ClassroomRetrieveUpdateDestroyView, AddChildView
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
@@ -41,6 +41,7 @@ urlpatterns = [
     path('api/children/', AddChildView.as_view(), name='add_child'),
     path('api/classrooms/', ClassroomListCreateView.as_view(), name='classroom-list-create'),
     path('api/classrooms/<int:pk>/', ClassroomRetrieveUpdateDestroyView.as_view(), name='classroom-detail'),
+    path('api/children-list/', ChildrenListView.as_view(), name='children-list'),
     path('classrooms-list/', ClassroomsListView.as_view(), name='classrooms_list'),
     path('families-list/', FamiliesListView.as_view(), name='families_list'),
     path('api/attendance/', AttendanceListCreateView.as_view(), name='attendance-list-create'),
