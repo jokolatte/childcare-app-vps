@@ -60,6 +60,7 @@ const EditFamily: React.FC = () => {
 
     // Handle form submission
     const onSubmit = (data: any) => {
+        console.log("Submitting data:", data); // Debugging line
         if (selectedFamilyId) {
             axios
                 .put(`http://127.0.0.1:8000/api/families/${selectedFamilyId}/`, data)
@@ -182,12 +183,20 @@ const EditFamily: React.FC = () => {
                                 control={control}
                                 defaultValue=""
                                 render={({ field }) => (
-                                    <select {...field}>
-                                        <option value="direct_deposit">Direct Deposit</option>
-                                        <option value="etransfer">E-Transfer</option>
-                                        <option value="cheque">Cheque</option>
-                                        <option value="credit_card">Credit Card</option>
-                                        <option value="cash">Cash</option>
+                                    <select
+                                        {...field}
+                                        value={field.value || ""}
+                                        onChange={(e) => {
+                                            console.log("Selected payment preference:", e.target.value); // Debugging
+                                            field.onChange(e.target.value);
+                                        }}
+                                    >
+                                        <option value="">-- Select Payment Preference --</option>
+                                        <option value="Direct Payment">Direct Deposit</option>
+                                        <option value="ETF">E-Transfer</option>
+                                        <option value="Cheque">Cheque</option>
+                                        <option value="Credit Card">Credit Card</option>
+                                        <option value="Cash">Cash</option>
                                     </select>
                                 )}
                             />

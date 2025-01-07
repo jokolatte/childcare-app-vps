@@ -221,11 +221,11 @@ const AddChild: React.FC = () => {
                                 defaultValue="direct_deposit"
                                 render={({ field }) => (
                                     <select {...field}>
-                                        <option value="direct_deposit">Direct Deposit</option>
-                                        <option value="etransfer">E-Transfer</option>
-                                        <option value="cheque">Cheque</option>
-                                        <option value="credit_card">Credit Card</option>
-                                        <option value="cash">Cash</option>
+                                        <option value="Direct Payment">Direct Deposit</option>
+                                        <option value="ETF">E-Transfer</option>
+                                        <option value="Cheque">Cheque</option>
+                                        <option value="Credit Card">Credit Card</option>
+                                        <option value="Cash">Cash</option>
                                     </select>
                                 )}
                             />

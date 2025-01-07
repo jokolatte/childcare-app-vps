@@ -141,8 +141,8 @@ REST_FRAMEWORK = {
         'rest_framework.throttling.AnonRateThrottle',
     ],
     'DEFAULT_THROTTLE_RATES': {
-        'user': '1000/day',  # Registered users: 1000 requests per day
-        'anon': '100/hour',  # Anonymous users: 100 requests per hour
+        'user': '5000/day',  # Registered users: 1000 requests per day
+        'anon': '1000/hour',  # Anonymous users: 100 requests per hour
     },    
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
