@@ -8,7 +8,7 @@ class FamilySerializer(serializers.ModelSerializer):
 
 class ChildSerializer(serializers.ModelSerializer):
     family = serializers.PrimaryKeyRelatedField(queryset=Family.objects.all())
-    classroom = serializers.StringRelatedField()
+    classroom = serializers.PrimaryKeyRelatedField(queryset=Classroom.objects.all())
     class Meta:
         model = Child
         fields = "__all__"

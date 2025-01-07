@@ -45,7 +45,6 @@ const EditChild: React.FC = () => {
                 .get(`http://127.0.0.1:8000/api/children/${selectedChildId}/`)
                 .then((response) => {
                     const childData = response.data;
-                    // Populate form fields with child data
                     Object.keys(childData).forEach((key) => setValue(key, childData[key]));
                 })
                 .catch((error) => console.error("Error fetching child details:", error));
@@ -55,8 +54,13 @@ const EditChild: React.FC = () => {
     // Handle form submission
     const onSubmit = (data: any) => {
         if (selectedChildId) {
+            const formattedData = {
+                ...data,
+                classroom: Number(data.classroom), // Ensure classroom is submitted as an ID
+            };
+
             axios
-                .put(`http://127.0.0.1:8000/api/children/${selectedChildId}/`, data)
+                .put(`http://127.0.0.1:8000/api/children/${selectedChildId}/`, formattedData)
                 .then((response) => alert("Child updated successfully!"))
                 .catch((error) => console.error("Error updating child:", error));
         } else {
