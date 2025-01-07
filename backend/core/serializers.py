@@ -8,7 +8,7 @@ class FamilySerializer(serializers.ModelSerializer):
 
 class ChildSerializer(serializers.ModelSerializer):
     family = serializers.PrimaryKeyRelatedField(queryset=Family.objects.all())
-    classroom = serializers.PrimaryKeyRelatedField(queryset=Classroom.objects.all())
+    classroom = serializers.StringRelatedField()
     class Meta:
         model = Child
         fields = "__all__"
@@ -16,6 +16,7 @@ class ChildSerializer(serializers.ModelSerializer):
         if not Classroom.objects.filter(id=value.id).exists():
             raise serializers.ValidationError("The specified classroom does not exist.")
         return value
+
 
 class ChildListSerializer(serializers.ModelSerializer):
     class Meta:

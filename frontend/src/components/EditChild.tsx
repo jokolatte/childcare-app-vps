@@ -14,17 +14,28 @@ interface Child {
     enrollment_start_date: string;
 }
 
+interface Classroom {
+    id: number;
+    classroom_name: string;
+}
+
 const EditChild: React.FC = () => {
     const { handleSubmit, control, reset, setValue } = useForm();
     const [children, setChildren] = useState<Child[]>([]);
+    const [classrooms, setClassrooms] = useState<Classroom[]>([]);
     const [selectedChildId, setSelectedChildId] = useState<number | null>(null);
 
-    // Fetch the list of children from the backend
+    // Fetch the list of children and classrooms from the backend
     useEffect(() => {
         axios
             .get("http://127.0.0.1:8000/api/children-list/")
             .then((response) => setChildren(response.data.results))
             .catch((error) => console.error("Error fetching children:", error));
+
+        axios
+            .get("http://127.0.0.1:8000/api/classrooms-list/")
+            .then((response) => setClassrooms(response.data))
+            .catch((error) => console.error("Error fetching classrooms:", error));
     }, []);
 
     // Fetch child details when a child is selected
@@ -114,7 +125,16 @@ const EditChild: React.FC = () => {
                         name="classroom"
                         control={control}
                         defaultValue=""
-                        render={({ field }) => <input {...field} />}
+                        render={({ field }) => (
+                            <select {...field}>
+                                <option value="">-- Select a Classroom --</option>
+                                {classrooms.map((classroom) => (
+                                    <option key={classroom.id} value={classroom.id}>
+                                        {classroom.classroom_name}
+                                    </option>
+                                ))}
+                            </select>
+                        )}
                     />
                 </div>
 
