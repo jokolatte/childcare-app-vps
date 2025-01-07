@@ -26,8 +26,8 @@ const EditFamily: React.FC = () => {
         axios
             .get("http://127.0.0.1:8000/api/families-list/")
             .then((response) => {
-                console.log("Fetched families:", response.data); // Adjusted to log response.data
-                setFamilies(response.data || []); // Adjusted to handle array directly
+                console.log("Fetched families:", response.data);
+                setFamilies(response.data || []);
                 setLoading(false);
             })
             .catch((error) => {
@@ -43,11 +43,20 @@ const EditFamily: React.FC = () => {
                 .get(`http://127.0.0.1:8000/api/families/${selectedFamilyId}/`)
                 .then((response) => {
                     const familyData = response.data;
-                    Object.keys(familyData).forEach((key) => setValue(key, familyData[key]));
+                    console.log("Fetched family details:", familyData);
+
+                    // Populate form fields with family data
+                    Object.keys(familyData).forEach((key) => {
+                        if (familyData[key] !== null && familyData[key] !== undefined) {
+                            setValue(key, familyData[key]);
+                        }
+                    });
                 })
                 .catch((error) => console.error("Error fetching family details:", error));
+        } else {
+            reset(); // Reset form if no family is selected
         }
-    }, [selectedFamilyId, setValue]);
+    }, [selectedFamilyId, setValue, reset]);
 
     // Handle form submission
     const onSubmit = (data: any) => {
@@ -129,6 +138,28 @@ const EditFamily: React.FC = () => {
                                 control={control}
                                 defaultValue=""
                                 render={({ field }) => <input {...field} />}
+                            />
+                        </div>
+
+                        {/* Parent 2 Phone */}
+                        <div>
+                            <label>Parent 2 Phone</label>
+                            <Controller
+                                name="parent_2_phone"
+                                control={control}
+                                defaultValue=""
+                                render={({ field }) => <input type="tel" {...field} />}
+                            />
+                        </div>
+
+                        {/* Parent 2 Email */}
+                        <div>
+                            <label>Parent 2 Email</label>
+                            <Controller
+                                name="parent_2_email"
+                                control={control}
+                                defaultValue=""
+                                render={({ field }) => <input type="email" {...field} />}
                             />
                         </div>
 

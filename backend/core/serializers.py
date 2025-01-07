@@ -4,7 +4,18 @@ from core.models import Family, Child, Classroom, Attendance, Payment, Invoice, 
 class FamilySerializer(serializers.ModelSerializer):
     class Meta:
         model = Family
-        fields = ['id', 'parent_1_name']
+        fields = [
+            'id', 
+            'parent_1_name', 
+            'parent_1_phone', 
+            'parent_1_email', 
+            'parent_2_name', 
+            'parent_2_phone', 
+            'parent_2_email', 
+            'address', 
+            'payment_preferences', 
+            'notes'
+        ]
 
 class ChildSerializer(serializers.ModelSerializer):
     family = serializers.PrimaryKeyRelatedField(queryset=Family.objects.all())
