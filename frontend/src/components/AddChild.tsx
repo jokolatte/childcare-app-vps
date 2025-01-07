@@ -93,6 +93,27 @@ const AddChild: React.FC = () => {
                     />
                 </div>
 
+                <div>
+    <label>Child Notes</label>
+    <Controller
+        name="notes"
+        control={control}
+        defaultValue=""
+        render={({ field }) => <textarea {...field} />}
+    />
+</div>
+
+{/* Allergy Information */}
+<div>
+    <label>Allergy Information</label>
+    <Controller
+        name="allergy_info"
+        control={control}
+        defaultValue=""
+        render={({ field }) => <textarea {...field} />}
+    />
+</div>
+
                 {/* Existing Family Toggle */}
                 <div>
                     <label>Existing Family?</label>
@@ -212,7 +233,7 @@ const AddChild: React.FC = () => {
 
                         {/* Notes */}
                         <div>
-                            <label>Notes (Optional)</label>
+                            <label>Family Notes (Optional)</label>
                             <Controller
                                 name="notes"
                                 control={control}
