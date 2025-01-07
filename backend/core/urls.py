@@ -5,6 +5,7 @@ from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from core.views import (
+    AddChildView,
     FamilyListCreateView,
     FamilyRetrieveUpdateDestroyView,
     ChildListCreateView,
@@ -32,6 +33,7 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
+    path('api/add-child/', AddChildView.as_view(), name='add_child'),
     path('api/families/', FamilyListCreateView.as_view(), name='family-list-create'),
     path('api/families/<int:pk>/', FamilyRetrieveUpdateDestroyView.as_view(), name='family-detail'),
     path('api/children/', ChildListCreateView.as_view(), name='child-list-create'),

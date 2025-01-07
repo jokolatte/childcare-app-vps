@@ -99,6 +99,16 @@ const AddChild: React.FC = () => {
                     />
                 </div>
 
+                <div>
+                    <label>Enrollment Start Date</label>
+                    <Controller
+                        name="enrollment_start_date"
+                        control={control}
+                        defaultValue=""
+                        render={({ field }) => <input type="date" {...field} />}
+                    />
+                </div>
+
                 {/* Classroom */}
                 <div>
                     <label>Classroom</label>
