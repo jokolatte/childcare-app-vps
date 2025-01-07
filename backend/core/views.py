@@ -10,13 +10,44 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .serializers import ChildSerializer, FamilySerializer
+
 class AddChildView(APIView):
-    def post(self, request):
-        serializer = ChildSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def post(self, request, *args, **kwargs):
+        data = request.data
+
+        # Check if it's a new family
+        if not data.get('existing_family', True):  # Default to True if key is missing
+            # Create a new family if `existing_family` is false
+            family_data = {
+                'parent_1_name': data.get('parent_1_name'),
+                'parent_1_phone': data.get('parent_1_phone'),
+                'parent_1_email': data.get('parent_1_email'),
+                'parent_2_name': data.get('parent_2_name', ''),
+                'parent_2_phone': data.get('parent_2_phone', ''),
+                'parent_2_email': data.get('parent_2_email', ''),
+                'address': data.get('address'),
+                'payment_preferences': data.get('payment_preferences'),
+                'notes': data.get('notes', ''),
+            }
+            family_serializer = FamilySerializer(data=family_data)
+            family_serializer.is_valid(raise_exception=True)
+            family = family_serializer.save()
+
+            # Add the newly created family ID to the payload
+            data['family'] = family.id
+
+        # Now create the child object
+        child_serializer = ChildSerializer(data=data)
+        child_serializer.is_valid(raise_exception=True)
+        child_serializer.save()
+
+        # Return the created child's data
+        return Response(child_serializer.data, status=status.HTTP_201_CREATED)
+
 
 class ClassroomsListView(APIView):
     def get(self, request):
