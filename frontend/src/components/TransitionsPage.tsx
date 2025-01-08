@@ -35,12 +35,13 @@ const TransitionsPage: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        axios.get('http://127.0.0.1:8000/api/children/')
+        axios.get('http://127.0.0.1:8000/api/children/dropdown/')
             .then(response => {
-                setChildren(response.data);
+                console.log('Fetched children for dropdown:', response.data.results); // Log the response
+                setChildren(response.data.results || []); // Ensure we're setting the results array
             })
             .catch(error => {
-                console.error('Error fetching children:', error);
+                console.error('Error fetching children for dropdown:', error);
             });
     }, []);
 
