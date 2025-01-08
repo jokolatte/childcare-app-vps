@@ -37,13 +37,18 @@ const TransitionsPage: React.FC = () => {
     useEffect(() => {
         axios.get('http://127.0.0.1:8000/api/children/dropdown/')
             .then(response => {
-                console.log('Fetched children for dropdown:', response.data.results); // Log the response
-                setChildren(response.data.results || []); // Ensure we're setting the results array
+                const sortedChildren = (response.data.results || []).sort((a, b) => {
+                    const nameA = `${a.first_name} ${a.last_name}`.toLowerCase();
+                    const nameB = `${b.first_name} ${b.last_name}`.toLowerCase();
+                    return nameA < nameB ? -1 : nameA > nameB ? 1 : 0; // Sort alphabetically
+                });
+                setChildren(sortedChildren);
             })
             .catch(error => {
                 console.error('Error fetching children for dropdown:', error);
             });
     }, []);
+    
 
     if (loading) {
         return <div>Loading...</div>;
