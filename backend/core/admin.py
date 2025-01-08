@@ -1,6 +1,6 @@
 # core/admin.py
 from django.contrib import admin
-from .models import Family, Child, Classroom, Attendance, Payment, Invoice, GovernmentFunding, Deposit, Calendar, SubsidyRate
+from .models import Transition, Family, Child, Classroom, Attendance, Payment, Invoice, GovernmentFunding, Deposit, Calendar, SubsidyRate
 
 # Register models
 admin.site.register(Family)
@@ -11,6 +11,12 @@ admin.site.register(Invoice)
 admin.site.register(GovernmentFunding)
 admin.site.register(Deposit)
 admin.site.register(SubsidyRate)
+
+@admin.register(Transition)
+class TransitionAdmin(admin.ModelAdmin):
+    list_display = ('child', 'next_classroom', 'transition_date', 'status')
+    search_fields = ('child__first_name', 'child__last_name', 'next_classroom__classroom_name')
+    list_filter = ('status', 'transition_date')
 
 @admin.register(Calendar)
 class CalendarAdmin(admin.ModelAdmin):

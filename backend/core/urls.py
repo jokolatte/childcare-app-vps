@@ -1,10 +1,13 @@
-from django.urls import path
+from django.urls import path, include
 from .views import ChildrenListView, ClassroomsListView, FamiliesListView, ClassroomListCreateView, ClassroomRetrieveUpdateDestroyView, AddChildView
 from rest_framework import permissions
+from rest_framework.routers import DefaultRouter
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from core.views import (
+    ChildrenDropdownListView,
+    TransitionViewSet,
     AddChildView,
     FamilyListCreateView,
     FamilyRetrieveUpdateDestroyView,
@@ -32,7 +35,11 @@ schema_view = get_schema_view(
     permission_classes=[permissions.AllowAny],
 )
 
+router = DefaultRouter()
+router.register(r'transitions', TransitionViewSet, basename='transition')
+
 urlpatterns = [
+    path('api/', include(router.urls)),
     path('api/add-child/', AddChildView.as_view(), name='add_child'),
     path('api/families/', FamilyListCreateView.as_view(), name='family-list-create'),
     path('api/families/<int:pk>/', FamilyRetrieveUpdateDestroyView.as_view(), name='family-detail'),
@@ -42,6 +49,7 @@ urlpatterns = [
     path('api/classrooms/', ClassroomListCreateView.as_view(), name='classroom-list-create'),
     path('api/classrooms/<int:pk>/', ClassroomRetrieveUpdateDestroyView.as_view(), name='classroom-detail'),
     path('api/children-list/', ChildrenListView.as_view(), name='children-list'),
+    path('children/dropdown/', ChildrenDropdownListView.as_view(), name='children-dropdown-list'),
     path('classrooms-list/', ClassroomsListView.as_view(), name='classrooms_list'),
     path('families-list/', FamiliesListView.as_view(), name='families_list'),
     path('api/attendance/', AttendanceListCreateView.as_view(), name='attendance-list-create'),

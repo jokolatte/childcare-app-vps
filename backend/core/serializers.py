@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from core.models import Family, Child, Classroom, Attendance, Payment, Invoice, GovernmentFunding, AlternativeCapacity
+from core.models import Transition, Family, Child, Classroom, Attendance, Payment, Invoice, GovernmentFunding, AlternativeCapacity
 
 class FamilySerializer(serializers.ModelSerializer):
     class Meta:
@@ -16,6 +16,25 @@ class FamilySerializer(serializers.ModelSerializer):
             'payment_preferences', 
             'notes'
         ]
+
+class ChildDropdownSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Child
+        fields = ['id', 'first_name', 'last_name']  # Only fields needed for the dropdown
+
+class TransitionSerializer(serializers.ModelSerializer):
+    child_name = serializers.SerializerMethodField()
+    next_classroom_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Transition
+        fields = ['id', 'child', 'child_name', 'next_classroom', 'next_classroom_name', 'transition_date', 'notes']
+
+    def get_child_name(self, obj):
+        return f"{obj.child.first_name} {obj.child.last_name}"
+
+    def get_next_classroom_name(self, obj):
+        return obj.next_classroom.classroom_name
 
 class ChildSerializer(serializers.ModelSerializer):
     family = serializers.PrimaryKeyRelatedField(queryset=Family.objects.all())

@@ -5,6 +5,7 @@ import ClassroomForm from "./components/ClassroomForm";
 import AddChild from "./components/AddChild";
 import EditChild from './components/EditChild';
 import EditFamily from './components/EditFamily';
+import TransitionsPage from './components/TransitionsPage';
 
 
 const App: React.FC = () => {
@@ -19,6 +20,7 @@ const App: React.FC = () => {
                         <Route path="/add-child" element={<AddChild />} />
                         <Route path="/edit-child" element={<EditChild />} />
                         <Route path="/edit-family" element={<EditFamily />} />
+                        <Route path="/transitions" element={<TransitionsPage />} />
                         <Route path="*" element={<div>404 Not Found</div>} />
                     </Routes>
                 </div>

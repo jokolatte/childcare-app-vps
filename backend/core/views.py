@@ -5,12 +5,21 @@ from rest_framework.generics import ListAPIView
 from rest_framework.filters import SearchFilter
 from rest_framework.filters import OrderingFilter
 from rest_framework.permissions import IsAuthenticated
-from core.models import Family, Child, Classroom, Attendance, Payment, Invoice, GovernmentFunding, AlternativeCapacity
-from core.serializers import ChildListSerializer, FamilySerializer, ChildSerializer, ClassroomSerializer, AttendanceSerializer, PaymentSerializer, InvoiceSerializer, GovernmentFundingSerializer, AlternativeCapacitySerializer
+from core.models import Transition, Family, Child, Classroom, Attendance, Payment, Invoice, GovernmentFunding, AlternativeCapacity
+from core.serializers import ChildDropdownSerializer, TransitionSerializer, ChildListSerializer, FamilySerializer, ChildSerializer, ClassroomSerializer, AttendanceSerializer, PaymentSerializer, InvoiceSerializer, GovernmentFundingSerializer, AlternativeCapacitySerializer
 from rest_framework.views import APIView
+from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
 from rest_framework import status
 from .serializers import ChildSerializer, FamilySerializer
+
+class ChildrenDropdownListView(ListAPIView):
+    queryset = Child.objects.all()
+    serializer_class = ChildDropdownSerializer
+
+class TransitionViewSet(ModelViewSet):
+    queryset = Transition.objects.all()
+    serializer_class = TransitionSerializer
 
 class ChildrenListView(ListAPIView):
     queryset = Child.objects.all()

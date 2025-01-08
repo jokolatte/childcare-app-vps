@@ -21,6 +21,16 @@ class Family(models.Model):
     def __str__(self):
         return f"Family {self.id}: {self.parent_1_name}"
 
+class Transition(models.Model):
+    child = models.ForeignKey('Child', on_delete=models.CASCADE, related_name='transitions')
+    next_classroom = models.ForeignKey('Classroom', on_delete=models.CASCADE)
+    transition_date = models.DateField()
+    age_at_transition = models.IntegerField(null=True, blank=True)  # Optional field
+    notes = models.TextField(null=True, blank=True)
+    status = models.CharField(max_length=20, choices=[('Planned', 'Planned'), ('Completed', 'Completed')])
+
+    def __str__(self):
+        return f"{self.child} transitions to {self.next_classroom} on {self.transition_date}"
 
 class Child(models.Model):
     first_name = models.CharField(max_length=100)
