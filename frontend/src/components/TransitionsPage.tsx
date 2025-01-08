@@ -63,14 +63,18 @@ const TransitionsPage: React.FC = () => {
 
     // Fetch classrooms
     useEffect(() => {
-        axios.get('http://127.0.0.1:8000/api/classrooms/') // Adjust API endpoint if necessary
+        axios.get('http://127.0.0.1:8000/api/classrooms/')
             .then(response => {
-                setClassrooms(response.data.results || response.data);
+                console.log('Raw API response:', response.data); // Log the raw API response
+                const fetchedClassrooms = response.data.results || []; // Extract the results array
+                console.log('Fetched classrooms array:', fetchedClassrooms); // Log the extracted array
+                setClassrooms(fetchedClassrooms); // Set the classrooms state
             })
             .catch(error => {
                 console.error('Error fetching classrooms:', error);
             });
     }, []);
+    
 
     const handleChildSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const selectedId = parseInt(e.target.value);
@@ -142,17 +146,21 @@ const TransitionsPage: React.FC = () => {
                     <form onSubmit={handleAddTransition}>
                         <label htmlFor="next-classroom">Next Classroom:</label>
                         <select
-                            id="next-classroom"
-                            value={nextClassroom}
-                            onChange={(e) => setNextClassroom(e.target.value)}
-                        >
-                            <option value="">-- Select a Classroom --</option>
-                            {classrooms.map((classroom) => (
-                                <option key={classroom.id} value={classroom.id}>
-                                    {classroom.name}
-                                </option>
-                            ))}
-                        </select>
+    id="next-classroom"
+    value={nextClassroom}
+    onChange={(e) => setNextClassroom(e.target.value)}
+>
+    <option value="">-- Select a Classroom --</option>
+    {classrooms.map((classroom) => {
+        console.log('Mapping classroom:', classroom); // Debug each classroom being mapped
+        return (
+            <option key={classroom.id} value={classroom.id}>
+                {classroom.classroom_name} {/* Display classroom_name */}
+            </option>
+        );
+    })}
+</select>
+
 
                         <label htmlFor="date-of-move">Date of Move:</label>
                         <input
