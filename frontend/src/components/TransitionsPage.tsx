@@ -186,24 +186,26 @@ const TransitionsPage: React.FC = () => {
             )}
 
             {transitions.length > 0 ? (
-                <table>
+                <table style={{ borderCollapse: 'collapse', width: '100%' }}>
                     <thead>
                         <tr>
-                            <th>Child</th>
-                            <th>Next Classroom</th>
-                            <th>Transition Date</th>
-                            <th>Age at Transition</th>
-                            <th>Actions</th>
+                            <th style={{ border: '1px solid black', padding: '8px' }}>Child</th>
+                            <th style={{ border: '1px solid black', padding: '8px' }}>Next Classroom</th>
+                            <th style={{ border: '1px solid black', padding: '8px' }}>Transition Date</th>
+                            <th style={{ border: '1px solid black', padding: '8px' }}>Age at Transition</th>
+                            <th style={{ border: '1px solid black', padding: '8px' }}>Notes</th>
+                            <th style={{ border: '1px solid black', padding: '8px' }}>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {transitions.map(transition => (
                             <tr key={transition.id}>
-                                <td>{transition.child_name}</td>
-                                <td>{transition.next_classroom_name}</td>
-                                <td>{transition.transition_date}</td>
-                                <td>{transition.age_at_transition}</td>
-                                <td>
+                                <td style={{ border: '1px solid black', padding: '8px' }}>{transition.child_name}</td>
+                                <td style={{ border: '1px solid black', padding: '8px' }}>{transition.next_classroom_name}</td>
+                                <td style={{ border: '1px solid black', padding: '8px' }}>{transition.transition_date}</td>
+                                <td style={{ border: '1px solid black', padding: '8px' }}>{transition.age_at_transition}</td>
+                                <td style={{ border: '1px solid black', padding: '8px' }}>{transition.notes}</td>
+                                <td style={{ border: '1px solid black', padding: '8px' }}>
                                     <button onClick={() => handleEditTransition(transition)}>Edit</button>
                                     <button onClick={() => handleDeleteTransition(transition.id)}>Delete</button>
                                 </td>
