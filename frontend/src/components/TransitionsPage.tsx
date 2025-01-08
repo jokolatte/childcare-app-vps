@@ -136,7 +136,7 @@ const TransitionsPage: React.FC = () => {
                         <strong>Child:</strong> {selectedChild.first_name} {selectedChild.last_name}
                     </p>
                     <p>
-                        <strong>Date of Birth:</strong> {selectedChild.date_of_birth}
+                        <strong>Date of Birth (yyyy-mm-dd):</strong> {selectedChild.date_of_birth}
                     </p>
 
                     <form onSubmit={handleAddTransition}>
@@ -180,7 +180,7 @@ const TransitionsPage: React.FC = () => {
                         <tr>
                             <th>Child</th>
                             <th>Next Classroom</th>
-                            <th>Transition Date</th>
+                            <th>Transition Date (yyyy-mm-dd)</th>
                             <th>Age at Transition (Months)</th>
                         </tr>
                     </thead>

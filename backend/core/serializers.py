@@ -21,7 +21,7 @@ class FamilySerializer(serializers.ModelSerializer):
 class ChildDropdownSerializer(serializers.ModelSerializer):
     class Meta:
         model = Child
-        fields = ['id', 'first_name', 'last_name']  # Only fields needed for the dropdown
+        fields = ['id', 'first_name', 'last_name', 'date_of_birth']  # Only fields needed for the dropdown
 
 class TransitionSerializer(serializers.ModelSerializer):
     child_name = serializers.SerializerMethodField()
