@@ -75,6 +75,7 @@ const TransitionsPage: React.FC = () => {
                             <th>Child</th>
                             <th>Next Classroom</th>
                             <th>Transition Date</th>
+                            <th>Age at Transition (Months)</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -83,6 +84,7 @@ const TransitionsPage: React.FC = () => {
                                 <td>{transition.child_name}</td>
                                 <td>{transition.next_classroom_name}</td>
                                 <td>{transition.transition_date}</td>
+                                <td>{transition.age_at_transition}</td>
                             </tr>
                         ))}
                     </tbody>

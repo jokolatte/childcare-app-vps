@@ -1,3 +1,4 @@
+from datetime import datetime
 from rest_framework import serializers
 from core.models import Transition, Family, Child, Classroom, Attendance, Payment, Invoice, GovernmentFunding, AlternativeCapacity
 
@@ -25,16 +26,26 @@ class ChildDropdownSerializer(serializers.ModelSerializer):
 class TransitionSerializer(serializers.ModelSerializer):
     child_name = serializers.SerializerMethodField()
     next_classroom_name = serializers.SerializerMethodField()
+    age_at_transition = serializers.SerializerMethodField()
 
     class Meta:
         model = Transition
-        fields = ['id', 'child', 'child_name', 'next_classroom', 'next_classroom_name', 'transition_date', 'notes']
+        fields = ['id', 'child', 'child_name', 'next_classroom', 'next_classroom_name', 'transition_date', 'notes', 'age_at_transition']
 
     def get_child_name(self, obj):
         return f"{obj.child.first_name} {obj.child.last_name}"
 
     def get_next_classroom_name(self, obj):
         return obj.next_classroom.classroom_name
+
+    def get_age_at_transition(self, obj):
+        # Calculate the child's age in months at the transition date
+        if obj.child.date_of_birth and obj.transition_date:
+            dob = obj.child.date_of_birth
+            transition_date = obj.transition_date
+            age_in_months = (transition_date.year - dob.year) * 12 + (transition_date.month - dob.month)
+            return age_in_months
+        return None
 
 class ChildSerializer(serializers.ModelSerializer):
     family = serializers.PrimaryKeyRelatedField(queryset=Family.objects.all())
