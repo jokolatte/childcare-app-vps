@@ -13,7 +13,7 @@ interface Family {
 }
 
 const AddChild: React.FC = () => {
-    const { handleSubmit, control, reset, watch, setValue } = useForm();
+    const { handleSubmit, control, reset, watch } = useForm();
     const [classrooms, setClassrooms] = useState<Classroom[]>([]);
     const [families, setFamilies] = useState<Family[]>([]);
     const [isExistingFamily, setIsExistingFamily] = useState<boolean>(false);
@@ -24,34 +24,51 @@ const AddChild: React.FC = () => {
 
     // Fetch Classrooms and Families from the backend
     useEffect(() => {
-        axios.get("http://127.0.0.1:8000/api/classrooms-list/")
-            .then(response => setClassrooms(response.data))
-            .catch(error => console.error("Error fetching classrooms:", error));
+        axios
+            .get("http://127.0.0.1:8000/api/classrooms-list/")
+            .then((response) => setClassrooms(response.data))
+            .catch((error) => console.error("Error fetching classrooms:", error));
 
-        axios.get("http://127.0.0.1:8000/api/families-list/")
-            .then(response => setFamilies(response.data))
-            .catch(error => console.error("Error fetching families:", error));
+        axios
+            .get("http://127.0.0.1:8000/api/families-list/")
+            .then((response) => setFamilies(response.data))
+            .catch((error) => console.error("Error fetching families:", error));
     }, []);
 
     // Handle form submission
     const onSubmit = (data: any) => {
-        if (!data.existing_family) {
-            // Remove existing family field if a new family is being created
-            delete data.family;
+        console.log("Raw form data:", data); // Debugging: Log raw form data
+
+        // Clean up the data by removing empty optional fields
+        const cleanedData = Object.keys(data).reduce((acc, key) => {
+            if (data[key] !== null && data[key] !== "" && data[key] !== undefined) {
+                acc[key] = data[key];
+            }
+            return acc;
+        }, {});
+
+        // Convert "yes"/"no" to boolean for `fob_required`
+        cleanedData.fob_required = cleanedData.fob_required === "yes";
+
+        // Remove `family` field if a new family is being created
+        if (!cleanedData.existing_family) {
+            delete cleanedData.family;
         }
 
-        // Convert "yes"/"no" to boolean for fob_required
-        const formattedData = {
-            ...data,
-            fob_required: data.fob_required === "yes", // Convert "yes" to true, "no" to false
-        };
+        console.log("Cleaned data for submission:", cleanedData); // Debugging: Log cleaned data
 
-        axios.post("http://127.0.0.1:8000/api/add-child/", formattedData)
-            .then(response => {
+        axios
+            .post("http://127.0.0.1:8000/api/add-child/", cleanedData)
+            .then(() => {
                 setSuccessMessage("Child added successfully!");
                 reset(); // Clear the form
             })
-            .catch(error => console.error("Error adding child:", error));
+            .catch((error) => {
+                console.error("Error adding child:", error);
+                if (error.response) {
+                    console.error("Backend error response:", error.response.data); // Backend error details
+                }
+            });
     };
 
     return (
@@ -59,7 +76,6 @@ const AddChild: React.FC = () => {
             <h2>Add Child</h2>
             {successMessage && <p style={{ color: "green" }}>{successMessage}</p>}
             <form onSubmit={handleSubmit(onSubmit)}>
-
                 {/* First Name */}
                 <div>
                     <label>First Name</label>
@@ -93,26 +109,27 @@ const AddChild: React.FC = () => {
                     />
                 </div>
 
+                {/* Child Notes */}
                 <div>
-    <label>Child Notes</label>
-    <Controller
-        name="notes"
-        control={control}
-        defaultValue=""
-        render={({ field }) => <textarea {...field} />}
-    />
-</div>
+                    <label>Child Notes</label>
+                    <Controller
+                        name="notes"
+                        control={control}
+                        defaultValue=""
+                        render={({ field }) => <textarea {...field} />}
+                    />
+                </div>
 
-{/* Allergy Information */}
-<div>
-    <label>Allergy Information</label>
-    <Controller
-        name="allergy_info"
-        control={control}
-        defaultValue=""
-        render={({ field }) => <textarea {...field} />}
-    />
-</div>
+                {/* Allergy Information */}
+                <div>
+                    <label>Allergy Information</label>
+                    <Controller
+                        name="allergy_info"
+                        control={control}
+                        defaultValue=""
+                        render={({ field }) => <textarea {...field} />}
+                    />
+                </div>
 
                 {/* Existing Family Toggle */}
                 <div>
@@ -122,7 +139,12 @@ const AddChild: React.FC = () => {
                         control={control}
                         defaultValue={false}
                         render={({ field }) => (
-                            <select {...field} onChange={(e) => setIsExistingFamily(e.target.value === "true")}>
+                            <select
+                                {...field}
+                                onChange={(e) =>
+                                    setIsExistingFamily(e.target.value === "true")
+                                }
+                            >
                                 <option value="false">No</option>
                                 <option value="true">Yes</option>
                             </select>
@@ -218,27 +240,16 @@ const AddChild: React.FC = () => {
                             <Controller
                                 name="payment_preferences"
                                 control={control}
-                                defaultValue="direct_deposit"
+                                defaultValue=""
                                 render={({ field }) => (
                                     <select {...field}>
-                                        <option value="Direct Payment">Direct Deposit</option>
-                                        <option value="ETF">E-Transfer</option>
-                                        <option value="Cheque">Cheque</option>
-                                        <option value="Credit Card">Credit Card</option>
-                                        <option value="Cash">Cash</option>
-                                    </select>
+    <option value="EFT">EFT</option>
+    <option value="Credit Card">Credit Card</option>
+    <option value="Cash">Cash</option>
+    <option value="Cheque">Cheque</option>
+    <option value="Direct Payment">Direct Payment</option>
+</select>
                                 )}
-                            />
-                        </div>
-
-                        {/* Notes */}
-                        <div>
-                            <label>Family Notes (Optional)</label>
-                            <Controller
-                                name="notes"
-                                control={control}
-                                defaultValue=""
-                                render={({ field }) => <textarea {...field} />}
                             />
                         </div>
                     </div>
