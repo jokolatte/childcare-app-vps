@@ -1,98 +1,152 @@
 import React, { useState, useEffect } from "react";
 
-const WithdrawalManagementPage: React.FC = () => {
-    const [children, setChildren] = useState<{ id: number; name: string }[]>([]);
-    const [selectedChildId, setSelectedChildId] = useState<number | null>(null);
+const WithdrawalManagementPage = () => {
+    const [children, setChildren] = useState([]);
+    const [withdrawals, setWithdrawals] = useState([]);
     const [formData, setFormData] = useState({
         withdrawal_date: "",
         withdrawal_reason: "",
-        deposit_status: "",
+        status: "",
         notes: "",
     });
+    const [selectedChildId, setSelectedChildId] = useState(null);
+    const [editingWithdrawalId, setEditingWithdrawalId] = useState(null); // Tracks the withdrawal being edited
 
-    // Fetch the list of children
+    // Fetch children for dropdown
     useEffect(() => {
-        const fetchChildren = async () => {
-            try {
-                const response = await fetch("http://localhost:8000/api/children/");
-                const data = await response.json();
-                setChildren(
-                    data.results.map((child) => ({
-                        id: child.id,
-                        name: `${child.first_name} ${child.last_name}`,
-                    }))
-                );
-            } catch (error) {
-                console.error("Error fetching children:", error);
-            }
-        };
-
-        fetchChildren();
+        fetch("http://localhost:8000/api/children/")
+            .then((response) => response.json())
+            .then((data) => setChildren(data.results))
+            .catch((error) => console.error("Error fetching children:", error));
     }, []);
 
-    // Handle input changes in the form
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        const { name, value } = e.target;
-        setFormData((prevData) => ({
-            ...prevData,
-            [name]: value,
-        }));
+    // Fetch withdrawals for display
+    useEffect(() => {
+        fetch("http://localhost:8000/api/withdrawals/")
+            .then((response) => response.json())
+            .then((data) => setWithdrawals(data.results))
+            .catch((error) => console.error("Error fetching withdrawals:", error));
+    }, []);
+
+    const handleInputChange = (event) => {
+        const { name, value } = event.target;
+        setFormData({ ...formData, [name]: value });
     };
 
-    // Handle form submission
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!selectedChildId) return;
+    const handleChildSelection = (event) => {
+        const childId = event.target.value;
+        setSelectedChildId(childId);
+        setEditingWithdrawalId(null); // Reset editing mode
+        setFormData({
+            withdrawal_date: "",
+            withdrawal_reason: "",
+            status: "",
+            notes: "",
+        });
+    };
 
-        const submissionData = { ...formData, child: selectedChildId };
+    const handleSubmit = (event) => {
+        event.preventDefault();
+        if (!selectedChildId && !editingWithdrawalId) {
+            alert("Please select a child or an entry to edit.");
+            return;
+        }
 
-        fetch("http://localhost:8000/api/withdrawals/", {
-            method: "POST",
+        const payload = {
+            child: selectedChildId,
+            withdrawal_date: formData.withdrawal_date,
+            withdrawal_reason: formData.withdrawal_reason,
+            status: formData.status,
+            notes: formData.notes,
+        };
+
+        const endpoint = editingWithdrawalId
+            ? `http://localhost:8000/api/withdrawals/${editingWithdrawalId}/`
+            : "http://localhost:8000/api/withdrawals/";
+
+        const method = editingWithdrawalId ? "PUT" : "POST";
+
+        fetch(endpoint, {
+            method: method,
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(submissionData),
+            body: JSON.stringify(payload),
         })
-            .then((res) => res.json())
-            .then((data) => {
-                console.log("Withdrawal created:", data);
-                alert("Withdrawal submitted successfully!");
-                // Reset form after successful submission
-                setSelectedChildId(null);
-                setFormData({
-                    withdrawal_date: "",
-                    withdrawal_reason: "",
-                    deposit_status: "",
-                    notes: "",
-                });
+            .then((response) => {
+                if (response.ok) {
+                    alert(
+                        editingWithdrawalId
+                            ? "Withdrawal updated successfully!"
+                            : "Withdrawal submitted successfully!"
+                    );
+                    setFormData({
+                        withdrawal_date: "",
+                        withdrawal_reason: "",
+                        status: "",
+                        notes: "",
+                    });
+                    setSelectedChildId(null);
+                    setEditingWithdrawalId(null);
+
+                    // Refresh withdrawals table
+                    fetch("http://localhost:8000/api/withdrawals/")
+                        .then((res) => res.json())
+                        .then((data) => setWithdrawals(data.results))
+                        .catch((error) =>
+                            console.error("Error refreshing withdrawals:", error)
+                        );
+                } else {
+                    alert("Error submitting withdrawal.");
+                }
             })
-            .catch((error) => console.error("Error submitting withdrawal:", error));
+            .catch((error) => console.error("Submission error:", error));
+    };
+
+    const handleEdit = (withdrawal) => {
+        setEditingWithdrawalId(withdrawal.id);
+        setSelectedChildId(withdrawal.child);
+        setFormData({
+            withdrawal_date: withdrawal.withdrawal_date,
+            withdrawal_reason: withdrawal.withdrawal_reason,
+            status: withdrawal.status,
+            notes: withdrawal.notes,
+        });
+    };
+
+    const handleDelete = (withdrawalId) => {
+        if (window.confirm("Are you sure you want to delete this withdrawal?")) {
+            fetch(`http://localhost:8000/api/withdrawals/${withdrawalId}/`, {
+                method: "DELETE",
+            })
+                .then((response) => {
+                    if (response.ok) {
+                        alert("Withdrawal deleted successfully!");
+                        setWithdrawals((prev) =>
+                            prev.filter((withdrawal) => withdrawal.id !== withdrawalId)
+                        );
+                    } else {
+                        alert("Error deleting withdrawal.");
+                    }
+                })
+                .catch((error) => console.error("Deletion error:", error));
+        }
     };
 
     return (
         <div>
             <h1>Withdrawal Management</h1>
-
-            {/* Dropdown for selecting a child */}
             <div>
-                <label htmlFor="childDropdown">Select a Child: </label>
-                <select
-                    id="childDropdown"
-                    value={selectedChildId || ""}
-                    onChange={(e) => setSelectedChildId(Number(e.target.value))}
-                >
+                <label htmlFor="child">Select a Child:</label>
+                <select id="child" onChange={handleChildSelection} value={selectedChildId || ""}>
                     <option value="">-- Select a Child --</option>
                     {children.map((child) => (
                         <option key={child.id} value={child.id}>
-                            {child.name}
+                            {child.first_name} {child.last_name}
                         </option>
                     ))}
                 </select>
             </div>
-
-            {/* Display editable fields when a child is selected */}
-            {selectedChildId && (
+            {(selectedChildId || editingWithdrawalId) && (
                 <form onSubmit={handleSubmit}>
-                    <h2>Withdrawal Details for Child ID: {selectedChildId}</h2>
-
                     <label htmlFor="withdrawal_date">Withdrawal Date:</label>
                     <input
                         type="date"
@@ -113,7 +167,7 @@ const WithdrawalManagementPage: React.FC = () => {
                         required
                     />
 
-                    <label htmlFor="deposit_status">Deposit Status:</label>
+                    <label htmlFor="status">Deposit Status:</label>
                     <select
                         id="status"
                         name="status"
@@ -134,9 +188,40 @@ const WithdrawalManagementPage: React.FC = () => {
                         onChange={handleInputChange}
                     ></textarea>
 
-                    <button type="submit">Submit Withdrawal</button>
+                    <button type="submit">
+                        {editingWithdrawalId ? "Update Withdrawal" : "Submit Withdrawal"}
+                    </button>
                 </form>
             )}
+
+            <h2>Existing Withdrawals</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Child</th>
+                        <th>Withdrawal Date</th>
+                        <th>Reason</th>
+                        <th>Status</th>
+                        <th>Notes</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {withdrawals.map((withdrawal) => (
+                        <tr key={withdrawal.id}>
+                            <td>{withdrawal.child_name}</td>
+                            <td>{withdrawal.withdrawal_date}</td>
+                            <td>{withdrawal.withdrawal_reason}</td>
+                            <td>{withdrawal.status}</td>
+                            <td>{withdrawal.notes}</td>
+                            <td>
+                                <button onClick={() => handleEdit(withdrawal)}>Edit</button>
+                                <button onClick={() => handleDelete(withdrawal.id)}>Delete</button>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
         </div>
     );
 };
