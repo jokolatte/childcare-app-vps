@@ -1,11 +1,12 @@
 from django.urls import path, include
-from .views import ChildrenListView, ClassroomsListView, FamiliesListView, ClassroomListCreateView, ClassroomRetrieveUpdateDestroyView, AddChildView
+from .views import WithdrawalViewSet, ChildrenListView, ClassroomsListView, FamiliesListView, ClassroomListCreateView, ClassroomRetrieveUpdateDestroyView, AddChildView
 from rest_framework import permissions
 from rest_framework.routers import DefaultRouter
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from core.views import (
+    WithdrawalViewSet,
     ChildrenDropdownListView,
     TransitionViewSet,
     AddChildView,
@@ -38,6 +39,9 @@ schema_view = get_schema_view(
 router = DefaultRouter()
 router.register(r'transitions', TransitionViewSet, basename='transition')
 
+router = DefaultRouter()
+router.register(r'withdrawals', WithdrawalViewSet)
+
 urlpatterns = [
     path('api/', include(router.urls)),
     path('api/add-child/', AddChildView.as_view(), name='add_child'),
@@ -63,4 +67,4 @@ urlpatterns = [
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/docs/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
-]
+] + router.urls

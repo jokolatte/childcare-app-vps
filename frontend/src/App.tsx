@@ -6,6 +6,7 @@ import AddChild from "./components/AddChild";
 import EditChild from './components/EditChild';
 import EditFamily from './components/EditFamily';
 import TransitionsPage from './components/TransitionsPage';
+import WithdrawalManagementPage from './components/WithdrawalManagementPage';
 
 
 const App: React.FC = () => {
@@ -21,6 +22,7 @@ const App: React.FC = () => {
                         <Route path="/edit-child" element={<EditChild />} />
                         <Route path="/edit-family" element={<EditFamily />} />
                         <Route path="/transitions" element={<TransitionsPage />} />
+                        <Route path="/withdrawals" element={<WithdrawalManagementPage />} />
                         <Route path="*" element={<div>404 Not Found</div>} />
                     </Routes>
                 </div>

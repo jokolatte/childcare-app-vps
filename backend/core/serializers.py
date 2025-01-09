@@ -1,6 +1,7 @@
 from datetime import datetime
 from rest_framework import serializers
-from core.models import Transition, Family, Child, Classroom, Attendance, Payment, Invoice, GovernmentFunding, AlternativeCapacity
+from rest_framework.serializers import ModelSerializer, SerializerMethodField
+from core.models import Withdrawal, Transition, Family, Child, Classroom, Attendance, Payment, Invoice, GovernmentFunding, AlternativeCapacity
 
 class FamilySerializer(serializers.ModelSerializer):
     class Meta:
@@ -17,6 +18,24 @@ class FamilySerializer(serializers.ModelSerializer):
             'payment_preferences', 
             'notes'
         ]
+
+class WithdrawalSerializer(serializers.ModelSerializer):
+    child_name = SerializerMethodField()
+    class Meta:
+        model = Withdrawal
+        fields = [
+            'id',
+            'withdrawal_date',
+            'withdrawal_reason',
+            'status',
+            'notes',
+            'child',
+            'child_name',  # Include the new field
+            'last_modified_date',
+            'last_modified_by',
+        ]
+    def get_child_name(self, obj):
+        return f"{obj.child.first_name} {obj.child.last_name}"  # Adjust based on your Child model
 
 class ChildDropdownSerializer(serializers.ModelSerializer):
     class Meta:
