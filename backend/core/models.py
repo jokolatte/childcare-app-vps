@@ -1,5 +1,23 @@
 from django.db import models
+from django.contrib.auth.models import User
 
+
+class Withdrawal(models.Model):
+    withdrawal_id = models.AutoField(primary_key=True)
+    child = models.ForeignKey('Child', on_delete=models.CASCADE)
+    withdrawal_date = models.DateField()
+    withdrawal_reason = models.TextField()
+    status = models.CharField(max_length=20, choices=[
+        ('refunded', 'Refunded'),
+        ('forfeited', 'Forfeited'),
+        ('held', 'Held'),
+    ])
+    notes = models.TextField(blank=True, null=True)
+    last_modified_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    last_modified_date = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Withdrawal for {self.child}"
 
 class Family(models.Model):
     parent_1_name = models.CharField(max_length=255)

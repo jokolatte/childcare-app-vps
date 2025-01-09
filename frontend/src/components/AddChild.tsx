@@ -243,6 +243,7 @@ const AddChild: React.FC = () => {
                                 defaultValue=""
                                 render={({ field }) => (
                                     <select {...field}>
+    <option value="" disabled>Choose one</option>
     <option value="EFT">EFT</option>
     <option value="Credit Card">Credit Card</option>
     <option value="Cash">Cash</option>
