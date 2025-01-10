@@ -8,10 +8,36 @@ from rest_framework.permissions import IsAuthenticated
 from core.models import Withdrawal, Transition, Family, Child, Classroom, Attendance, Payment, Invoice, GovernmentFunding, AlternativeCapacity
 from core.serializers import WithdrawalSerializer, ChildDropdownSerializer, TransitionSerializer, ChildListSerializer, FamilySerializer, ChildSerializer, ClassroomSerializer, AttendanceSerializer, PaymentSerializer, InvoiceSerializer, GovernmentFundingSerializer, AlternativeCapacitySerializer
 from rest_framework.views import APIView
+from rest_framework.decorators import api_view
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
 from rest_framework import status
 from .serializers import ChildSerializer, FamilySerializer
+
+@api_view(['GET'])
+def calendar_stats(request):
+    from datetime import date
+
+    # Example: Fetch stats for the current date
+    today = date.today()
+    classrooms = Classroom.objects.all()
+    total_capacity = 0
+    total_enrolled = 0
+
+    for classroom in classrooms:
+        enrolled_count = Child.objects.filter(
+            enrollment_start_date__lte=today,
+            enrollment_end_date__gte=today,
+            classroom=classroom
+        ).count()
+        total_capacity += classroom.max_capacity
+        total_enrolled += enrolled_count
+
+    return Response({
+        "date": today,
+        "enrollment": total_enrolled,
+        "capacity": total_capacity
+    })
 
 class WithdrawalViewSet(ModelViewSet):
     queryset = Withdrawal.objects.all()

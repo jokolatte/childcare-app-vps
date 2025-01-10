@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from .models import Child, Classroom
 
 
 class Withdrawal(models.Model):
@@ -113,8 +114,6 @@ class AlternativeCapacity(models.Model):
 class Attendance(models.Model):
     classroom = models.ForeignKey(Classroom, on_delete=models.CASCADE, related_name="attendances")
     date = models.DateField()
-    max_capacity = models.IntegerField()
-    enrolled_children = models.IntegerField()
     notes = models.TextField(blank=True, null=True)
 
     def __str__(self):

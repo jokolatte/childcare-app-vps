@@ -1,11 +1,12 @@
 from django.urls import path, include
-from .views import WithdrawalViewSet, ChildrenListView, ClassroomsListView, FamiliesListView, ClassroomListCreateView, ClassroomRetrieveUpdateDestroyView, AddChildView
+from .views import calendar_stats, WithdrawalViewSet, ChildrenListView, ClassroomsListView, FamiliesListView, ClassroomListCreateView, ClassroomRetrieveUpdateDestroyView, AddChildView
 from rest_framework import permissions
 from rest_framework.routers import DefaultRouter
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from core.views import (
+    calendar_stats,
     WithdrawalViewSet,
     ChildrenDropdownListView,
     TransitionViewSet,
@@ -43,6 +44,7 @@ router = DefaultRouter()
 router.register(r'withdrawals', WithdrawalViewSet)
 
 urlpatterns = [
+    path('api/enrollment/stats', calendar_stats, name='calendar_stats'),
     path('api/', include(router.urls)),
     path('api/add-child/', AddChildView.as_view(), name='add_child'),
     path('api/families/', FamilyListCreateView.as_view(), name='family-list-create'),
