@@ -8,21 +8,16 @@ const EnrollmentCalendar = () => {
     const [classrooms, setClassrooms] = useState([]);
     const [selectedClassroom, setSelectedClassroom] = useState("");
     const [events, setEvents] = useState([]);
-    const [selectedDate, setSelectedDate] = useState(null); // New: Tracks selected date
-    const [classroomsForDate, setClassroomsForDate] = useState([]); // New: Classrooms for the selected date
+    const [selectedDate, setSelectedDate] = useState(null); // Tracks selected date
+    const [classroomsForDate, setClassroomsForDate] = useState([]); // Classrooms for the selected date
 
     // Fetch classrooms when the component loads
     useEffect(() => {
         const fetchClassrooms = async () => {
             try {
                 const response = await fetch("http://127.0.0.1:8000/core/api/classrooms");
-                if (!response.ok) {
-                    throw new Error("Failed to fetch classrooms");
-                }
                 const data = await response.json();
-
-                const classroomsData = data.results || data; // Support both flat and paginated responses
-                setClassrooms(classroomsData);
+                setClassrooms(data.results || data); // Support both flat and paginated responses
             } catch (error) {
                 console.error("Error fetching classrooms:", error);
                 setClassrooms([]);
@@ -55,18 +50,31 @@ const EnrollmentCalendar = () => {
     }, [view, selectedClassroom]);
 
     // Fetch classrooms for a specific date
-    const handleDateClick = async (info) => {
-        const clickedDate = info.dateStr;
-        setSelectedDate(clickedDate);
-
+    const fetchClassroomsForDate = async (date) => {
         try {
-            const response = await fetch(`http://127.0.0.1:8000/core/api/classrooms-for-date?date=${clickedDate}`);
+            const response = await fetch(`http://127.0.0.1:8000/core/api/classrooms-for-date?date=${date}`);
             const data = await response.json();
             setClassroomsForDate(data);
         } catch (error) {
             console.error("Error fetching classrooms for date:", error);
             setClassroomsForDate([]);
         }
+    };
+
+    // Handle date click
+    const handleDateClick = (info) => {
+        const clickedDate = info.dateStr;
+        setSelectedDate(clickedDate);
+        fetchClassroomsForDate(clickedDate);
+    };
+
+    // Navigate to the previous or next day
+    const navigateDay = (direction) => {
+        const currentDate = new Date(selectedDate);
+        currentDate.setDate(currentDate.getDate() + (direction === "next" ? 1 : -1)); // Add/subtract one day
+        const newDate = currentDate.toISOString().split("T")[0];
+        setSelectedDate(newDate);
+        fetchClassroomsForDate(newDate);
     };
 
     return (
@@ -103,33 +111,34 @@ const EnrollmentCalendar = () => {
                         onChange={(e) => setSelectedClassroom(e.target.value)}
                     >
                         <option value="">Select a Classroom</option>
-                        {Array.isArray(classrooms) &&
-                            classrooms.map((classroom) => (
-                                <option key={classroom.id} value={classroom.id}>
-                                    {classroom.classroom_name}
-                                </option>
-                            ))}
+                        {classrooms.map((classroom) => (
+                            <option key={classroom.id} value={classroom.id}>
+                                {classroom.classroom_name}
+                            </option>
+                        ))}
                     </select>
                 </div>
             )}
 
             {/* Calendar */}
             <FullCalendar
-    plugins={[dayGridPlugin, interactionPlugin]}
-    initialView="dayGridMonth"
-    events={events}
-    height="80%"
-    dateClick={(info) => {
-        console.log("Date clicked:", info.dateStr); // Debugging
-        handleDateClick(info);
-    }}
-/>
-
+                plugins={[dayGridPlugin, interactionPlugin]} // Include interaction plugin
+                initialView="dayGridMonth"
+                events={events}
+                height="80%"
+                dateClick={handleDateClick} // Handle date clicks
+            />
 
             {/* Classroom List for Selected Date */}
-            {selectedDate && classroomsForDate.length > 0 && (
+            {selectedDate && (
                 <div style={{ marginTop: "20px" }}>
-                    <h2 style={{ textAlign: "center" }}>Classrooms for {selectedDate}</h2>
+                    <div style={{ textAlign: "center", marginBottom: "20px" }}>
+                        <button onClick={() => navigateDay("prev")}>← Previous</button>
+                        <span style={{ margin: "0 20px" }}>
+                            Classrooms for {selectedDate}
+                        </span>
+                        <button onClick={() => navigateDay("next")}>Next →</button>
+                    </div>
                     <ul style={{ textAlign: "left", listStyleType: "none", padding: "0" }}>
                         {classroomsForDate.map((classroom) => (
                             <li key={classroom.id} style={{ margin: "10px 0" }}>
