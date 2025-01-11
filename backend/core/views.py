@@ -18,6 +18,80 @@ from .serializers import ChildSerializer, FamilySerializer
 
 
 @api_view(['GET'])
+def classroom_attendance(request):
+    # Get classroom_id and date from query parameters
+    classroom_id = request.GET.get('classroom_id')
+    date_str = request.GET.get('date')
+    if not classroom_id or not date_str:
+        return Response({"error": "Both classroom_id and date parameters are required."}, status=400)
+
+    from datetime import datetime
+    try:
+        date = datetime.strptime(date_str, '%Y-%m-%d').date()
+    except ValueError:
+        return Response({"error": "Invalid date format. Use YYYY-MM-DD."}, status=400)
+
+    # Fetch classroom and validate
+    try:
+        classroom = Classroom.objects.get(id=classroom_id)
+    except Classroom.DoesNotExist:
+        return Response({"error": "Classroom not found."}, status=404)
+
+    # Fetch children enrolled in the classroom on the specified date
+    children = Child.objects.filter(
+        Q(enrollment_end_date__isnull=True) | Q(enrollment_end_date__gte=date),
+        enrollment_start_date__lte=date,
+        classroom=classroom
+    )
+
+    data = []
+    for child in children:
+        age_in_months = (
+            (date.year - child.date_of_birth.year) * 12
+            + (date.month - child.date_of_birth.month)
+        )
+        data.append({
+            "id": child.id,
+            "name": f"{child.first_name} {child.last_name}",
+            "date_of_birth": child.date_of_birth,
+            "age_in_months": age_in_months,
+        })
+
+    return Response(data)
+
+@api_view(['GET'])
+def classrooms_for_date(request):
+    # Get the date from the query parameter
+    date_str = request.GET.get('date')
+    if not date_str:
+        return Response({"error": "Date parameter is required."}, status=400)
+
+    from datetime import datetime
+    try:
+        date = datetime.strptime(date_str, '%Y-%m-%d').date()
+    except ValueError:
+        return Response({"error": "Invalid date format. Use YYYY-MM-DD."}, status=400)
+
+    # Fetch classrooms and their stats for the specified date
+    classrooms = Classroom.objects.all()
+    data = []
+    for classroom in classrooms:
+        total_enrolled = Child.objects.filter(
+            Q(enrollment_end_date__isnull=True) | Q(enrollment_end_date__gte=date),
+            enrollment_start_date__lte=date,
+            classroom=classroom
+        ).count()
+
+        data.append({
+            "id": classroom.id,
+            "classroom_name": classroom.classroom_name,
+            "total_enrolled": total_enrolled,
+            "total_capacity": classroom.max_capacity,
+        })
+
+    return Response(data)
+
+@api_view(['GET'])
 def calendar_stats(request):
     # Get parameters from the request
     classroom_id = request.GET.get('classroom_id', None)

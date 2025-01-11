@@ -6,6 +6,8 @@ from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from core.views import (
+    classrooms_for_date,
+    classroom_attendance,
     get_classrooms,
     calendar_stats,
     WithdrawalViewSet,
@@ -45,6 +47,8 @@ router = DefaultRouter()
 router.register(r'withdrawals', WithdrawalViewSet)
 
 urlpatterns = [
+    path('api/classrooms-for-date', classrooms_for_date, name='classrooms_for_date'),
+    path('api/classroom-attendance', classroom_attendance, name='classroom_attendance'),
     path('api/classrooms', get_classrooms, name='get_classrooms'),
     path('api/enrollment/stats', calendar_stats, name='calendar_stats'),
     path('api/', include(router.urls)),
