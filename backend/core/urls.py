@@ -6,6 +6,7 @@ from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from core.views import (
+    get_classrooms,
     calendar_stats,
     WithdrawalViewSet,
     ChildrenDropdownListView,
@@ -44,6 +45,7 @@ router = DefaultRouter()
 router.register(r'withdrawals', WithdrawalViewSet)
 
 urlpatterns = [
+    path('api/classrooms', get_classrooms, name='get_classrooms'),
     path('api/enrollment/stats', calendar_stats, name='calendar_stats'),
     path('api/', include(router.urls)),
     path('api/add-child/', AddChildView.as_view(), name='add_child'),

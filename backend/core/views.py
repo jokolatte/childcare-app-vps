@@ -19,28 +19,55 @@ from .serializers import ChildSerializer, FamilySerializer
 
 @api_view(['GET'])
 def calendar_stats(request):
-    # Get all open dates
+    # Get parameters from the request
+    classroom_id = request.GET.get('classroom_id', None)
     open_dates = Calendar.objects.filter(is_closed=False).values('date')
 
-    # Calculate stats for each open date
     stats = []
-    classrooms = Classroom.objects.all()
-    total_capacity = sum(c.max_capacity for c in classrooms)
 
-    for entry in open_dates:
-        date = entry['date']
-        total_enrolled = Child.objects.filter(
-            Q(enrollment_end_date__isnull=True) | Q(enrollment_end_date__gte=date),
-            enrollment_start_date__lte=date
-        ).count()
+    if classroom_id:
+        # Filter stats for a specific classroom
+        try:
+            classroom = Classroom.objects.get(id=classroom_id)
+            for entry in open_dates:
+                date = entry['date']
+                total_enrolled = Child.objects.filter(
+                    Q(enrollment_end_date__isnull=True) | Q(enrollment_end_date__gte=date),
+                    enrollment_start_date__lte=date,
+                    classroom=classroom
+                ).count()
 
-        stats.append({
-            "date": date,
-            "total_capacity": total_capacity,
-            "total_enrolled": total_enrolled,
-        })
+                stats.append({
+                    "date": date,
+                    "total_capacity": classroom.max_capacity,
+                    "total_enrolled": total_enrolled,
+                })
+        except Classroom.DoesNotExist:
+            return Response({"error": "Classroom not found."}, status=404)
+    else:
+        # Default: Centre-wide stats
+        classrooms = Classroom.objects.all()
+        total_capacity = sum(c.max_capacity for c in classrooms)
+
+        for entry in open_dates:
+            date = entry['date']
+            total_enrolled = Child.objects.filter(
+                Q(enrollment_end_date__isnull=True) | Q(enrollment_end_date__gte=date),
+                enrollment_start_date__lte=date
+            ).count()
+
+            stats.append({
+                "date": date,
+                "total_capacity": total_capacity,
+                "total_enrolled": total_enrolled,
+            })
 
     return Response(stats)
+
+@api_view(['GET'])
+def get_classrooms(request):
+    classrooms = Classroom.objects.all().values('id', 'classroom_name')
+    return Response(list(classrooms))
 
 class WithdrawalViewSet(ModelViewSet):
     queryset = Withdrawal.objects.all()
