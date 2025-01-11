@@ -16,13 +16,14 @@ from django.db.models import Q
 from datetime import datetime
 from .serializers import ChildSerializer, FamilySerializer
 from django.shortcuts import get_object_or_404
+from datetime import date, timedelta
 
 
 @api_view(['GET'])
 def classroom_attendance(request):
-    # Get classroom_id and date from query parameters
     classroom_id = request.GET.get('classroom_id')
     date_str = request.GET.get('date')
+
     if not classroom_id or not date_str:
         return Response({"error": "Both classroom_id and date parameters are required."}, status=400)
 
@@ -32,24 +33,48 @@ def classroom_attendance(request):
     except ValueError:
         return Response({"error": "Invalid date format. Use YYYY-MM-DD."}, status=400)
 
-    # Fetch classroom and validate
     try:
         classroom = Classroom.objects.get(id=classroom_id)
     except Classroom.DoesNotExist:
         return Response({"error": "Classroom not found."}, status=404)
 
-    # Fetch children enrolled in the classroom on the specified date
-    children = Child.objects.filter(
-        Q(enrollment_end_date__isnull=True) | Q(enrollment_end_date__gte=date),
-        enrollment_start_date__lte=date,
-        classroom=classroom
+    # Fetch children directly enrolled in the classroom
+    enrolled_children = Child.objects.filter(
+        classroom=classroom,
+        enrollment_start_date__lte=date
+    ).exclude(
+        enrollment_end_date__lt=date
     )
 
+    # Fetch children transitioning into the classroom
+    transitioning_in = Transition.objects.filter(
+        next_classroom=classroom,
+        transition_date__lte=date
+    ).exclude(
+        child__enrollment_end_date__lt=date
+    ).select_related('child')
+
+    # Exclude children transitioning out of the classroom
+    transitioning_out = Transition.objects.filter(
+        child__classroom=classroom,
+        transition_date__lte=date
+    ).exclude(
+        next_classroom=classroom
+    ).select_related('child')
+
+    # Prepare the final list of children
+    final_children = list(enrolled_children)
+    final_children += [t.child for t in transitioning_in]
+    final_children = [
+        child for child in final_children if child not in [t.child for t in transitioning_out]
+    ]
+
+    # Format the response data
     data = []
-    for child in children:
+    for child in final_children:
         age_in_months = (
-            (date.year - child.date_of_birth.year) * 12
-            + (date.month - child.date_of_birth.month)
+            (date.year - child.date_of_birth.year) * 12 +
+            (date.month - child.date_of_birth.month)
         )
         data.append({
             "id": child.id,
@@ -59,6 +84,55 @@ def classroom_attendance(request):
         })
 
     return Response(data)
+
+
+
+
+
+@api_view(['GET'])
+def classroom_attendance_stats(request):
+    date_str = request.GET.get('date')
+    if not date_str:
+        return Response({"error": "Date parameter is required."}, status=400)
+
+    from datetime import datetime
+    try:
+        date = datetime.strptime(date_str, '%Y-%m-%d').date()
+    except ValueError:
+        return Response({"error": "Invalid date format. Use YYYY-MM-DD."}, status=400)
+
+    # Fetch all classrooms
+    classrooms = Classroom.objects.all()
+    stats = []
+
+    for classroom in classrooms:
+        # Children directly enrolled in the classroom
+        children = Child.objects.filter(
+            Q(enrollment_end_date__isnull=True) | Q(enrollment_end_date__gte=date),
+            enrollment_start_date__lte=date,
+            classroom=classroom
+        )
+
+        # Children transitioning into the classroom on this date
+        transitioning_in = Transition.objects.filter(
+            next_classroom=classroom,
+            transition_date__lte=date
+        ).exclude(
+            child__enrollment_end_date__lt=date  # Exclude children no longer active
+        )
+
+        total_enrolled = len(children) + transitioning_in.count()
+        stats.append({
+            "classroom_id": classroom.id,
+            "classroom_name": classroom.classroom_name,
+            "total_enrolled": total_enrolled,
+            "total_capacity": classroom.max_capacity,
+        })
+
+    return Response(stats)
+
+
+
 
 @api_view(['GET'])
 def classrooms_for_date(request):

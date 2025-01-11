@@ -5,6 +5,7 @@ from rest_framework.routers import DefaultRouter
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from . import views
 from core.views import (
     classrooms_for_date,
     classroom_attendance,
@@ -45,6 +46,7 @@ router.register(r'transitions', TransitionViewSet, basename='transition')
 router.register(r'withdrawals', WithdrawalViewSet)
 
 urlpatterns = [
+    path('api/classroom-attendance-stats', views.classroom_attendance_stats, name='classroom-attendance-stats'),
     path('api/classrooms-for-date', classrooms_for_date, name='classrooms_for_date'),
     path('api/classroom-attendance', classroom_attendance, name='classroom_attendance'),
     path('api/classrooms', get_classrooms, name='get_classrooms'),
