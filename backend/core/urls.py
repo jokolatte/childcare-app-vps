@@ -42,8 +42,6 @@ schema_view = get_schema_view(
 
 router = DefaultRouter()
 router.register(r'transitions', TransitionViewSet, basename='transition')
-
-router = DefaultRouter()
 router.register(r'withdrawals', WithdrawalViewSet)
 
 urlpatterns = [
