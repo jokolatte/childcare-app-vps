@@ -8,8 +8,9 @@ const EnrollmentCalendar = () => {
     const [statsView, setStatsView] = useState("centre"); // Tracks "centre" or "classroom"
     const [classrooms, setClassrooms] = useState([]);
     const [selectedClassroom, setSelectedClassroom] = useState("");
+    const [attendance, setAttendance] = useState([]);
     const [events, setEvents] = useState([]);
-    const [selectedDate, setSelectedDate] = useState(null);
+    const [selectedDate, setSelectedDate] = useState(null); // Tracks selected date
     const [classroomsForDate, setClassroomsForDate] = useState([]);
 
     // Fetch classrooms when the component loads
@@ -62,12 +63,32 @@ const EnrollmentCalendar = () => {
         }
     };
 
+    // Fetch attendance for a specific classroom
+    const fetchAttendance = async (classroomId, date) => {
+        try {
+            const response = await fetch(
+                `http://127.0.0.1:8000/core/api/classroom-attendance?classroom_id=${classroomId}&date=${date}`
+            );
+            const data = await response.json();
+            setAttendance(data);
+        } catch (error) {
+            console.error("Error fetching attendance:", error);
+            setAttendance([]);
+        }
+    };
+
     // Handle date click
     const handleDateClick = (info) => {
         const clickedDate = info.dateStr;
         setSelectedDate(clickedDate);
         fetchClassroomsForDate(clickedDate);
         setView("day"); // Switch to day view
+    };
+
+    // Handle classroom click
+    const handleClassroomClick = (classroomId) => {
+        setSelectedClassroom(classroomId);
+        fetchAttendance(classroomId, selectedDate);
     };
 
     // Navigate to the previous or next day
@@ -149,13 +170,39 @@ const EnrollmentCalendar = () => {
                         <button onClick={() => navigateDay("next")}>Next →</button>
                     </div>
 
-                    <ul style={{ textAlign: "left", listStyleType: "none", padding: "0" }}>
-                        {classroomsForDate.map((classroom) => (
-                            <li key={classroom.id} style={{ margin: "10px 0" }}>
-                                {classroom.classroom_name} - {classroom.total_enrolled}/{classroom.total_capacity}
-                            </li>
-                        ))}
-                    </ul>
+                    <div style={{ display: "flex", gap: "20px" }}>
+                        {/* Classroom Buttons */}
+                        <ul style={{ flex: 1, textAlign: "left", listStyleType: "none", padding: "0" }}>
+                            {classroomsForDate.map((classroom) => (
+                                <li key={classroom.id} style={{ margin: "10px 0" }}>
+                                    <button
+                                        style={{
+                                            width: "100%",
+                                            padding: "10px",
+                                            background: "lightblue",
+                                            border: "none",
+                                            cursor: "pointer",
+                                        }}
+                                        onClick={() => handleClassroomClick(classroom.id)}
+                                    >
+                                        {classroom.classroom_name} - {classroom.total_enrolled}/{classroom.total_capacity}
+                                    </button>
+                                </li>
+                            ))}
+                        </ul>
+
+                        {/* Attendance List */}
+                        <div style={{ flex: 2 }}>
+                            <h3>Attendance for {classroomsForDate.find((c) => c.id === selectedClassroom)?.classroom_name}</h3>
+                            <ul style={{ listStyleType: "none", padding: "0" }}>
+                                {attendance.map((child) => (
+                                    <li key={child.id} style={{ margin: "10px 0" }}>
+                                        {child.name} - DOB: {child.date_of_birth} - Age: {child.age_in_months} months
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    </div>
 
                     <button
                         onClick={handleBackToCalendar}
