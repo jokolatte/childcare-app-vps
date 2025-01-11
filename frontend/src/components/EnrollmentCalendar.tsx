@@ -17,7 +17,10 @@ const EnrollmentCalendar = () => {
                     throw new Error("Failed to fetch classrooms");
                 }
                 const data = await response.json();
-                setClassrooms(data); // Update classrooms with API data
+    
+                // Check if the response contains a "results" key
+                const classroomsData = data.results || data; // Support both flat and paginated responses
+                setClassrooms(classroomsData);
             } catch (error) {
                 console.error("Error fetching classrooms:", error);
                 setClassrooms([]); // Ensure classrooms is an empty array on error
@@ -25,6 +28,7 @@ const EnrollmentCalendar = () => {
         };
         fetchClassrooms();
     }, []);
+    
     
 
     // Fetch stats whenever the view or classroom selection changes
@@ -93,6 +97,7 @@ const EnrollmentCalendar = () => {
         </select>
     </div>
 )}
+
 
 
             {/* Calendar */}
