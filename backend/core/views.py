@@ -5,39 +5,42 @@ from rest_framework.generics import ListAPIView
 from rest_framework.filters import SearchFilter
 from rest_framework.filters import OrderingFilter
 from rest_framework.permissions import IsAuthenticated
-from core.models import Withdrawal, Transition, Family, Child, Classroom, Attendance, Payment, Invoice, GovernmentFunding, AlternativeCapacity
+from core.models import Calendar, Withdrawal, Transition, Family, Child, Classroom, Attendance, Payment, Invoice, GovernmentFunding, AlternativeCapacity
 from core.serializers import WithdrawalSerializer, ChildDropdownSerializer, TransitionSerializer, ChildListSerializer, FamilySerializer, ChildSerializer, ClassroomSerializer, AttendanceSerializer, PaymentSerializer, InvoiceSerializer, GovernmentFundingSerializer, AlternativeCapacitySerializer
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
 from rest_framework import status
+from django.db.models import Q
+from datetime import datetime
 from .serializers import ChildSerializer, FamilySerializer
+
 
 @api_view(['GET'])
 def calendar_stats(request):
-    from datetime import date
+    # Get all open dates
+    open_dates = Calendar.objects.filter(is_closed=False).values('date')
 
-    # Example: Fetch stats for the current date
-    today = date.today()
+    # Calculate stats for each open date
+    stats = []
     classrooms = Classroom.objects.all()
-    total_capacity = 0
-    total_enrolled = 0
+    total_capacity = sum(c.max_capacity for c in classrooms)
 
-    for classroom in classrooms:
-        enrolled_count = Child.objects.filter(
-            enrollment_start_date__lte=today,
-            enrollment_end_date__gte=today,
-            classroom=classroom
+    for entry in open_dates:
+        date = entry['date']
+        total_enrolled = Child.objects.filter(
+            Q(enrollment_end_date__isnull=True) | Q(enrollment_end_date__gte=date),
+            enrollment_start_date__lte=date
         ).count()
-        total_capacity += classroom.max_capacity
-        total_enrolled += enrolled_count
 
-    return Response({
-        "date": today,
-        "enrollment": total_enrolled,
-        "capacity": total_capacity
-    })
+        stats.append({
+            "date": date,
+            "total_capacity": total_capacity,
+            "total_enrolled": total_enrolled,
+        })
+
+    return Response(stats)
 
 class WithdrawalViewSet(ModelViewSet):
     queryset = Withdrawal.objects.all()
