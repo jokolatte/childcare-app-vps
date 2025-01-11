@@ -91,14 +91,38 @@ const EnrollmentCalendar = () => {
         fetchAttendance(classroomId, selectedDate);
     };
 
-    // Navigate to the previous or next day
-    const navigateDay = (direction) => {
-        const currentDate = new Date(selectedDate);
-        currentDate.setDate(currentDate.getDate() + (direction === "next" ? 1 : -1));
-        const newDate = currentDate.toISOString().split("T")[0];
-        setSelectedDate(newDate);
-        fetchClassroomsForDate(newDate);
-    };
+    // Navigate between dates and refresh classroom attendance
+const navigateDate = async (direction) => {
+    const currentDate = new Date(selectedDate);
+    currentDate.setDate(currentDate.getDate() + (direction === "next" ? 1 : -1));
+    const newDate = currentDate.toISOString().split("T")[0];
+    setSelectedDate(newDate);
+
+    if (selectedClassroom) {
+        // If a classroom is selected, fetch its attendance for the new date
+        try {
+            const response = await fetch(
+                `http://127.0.0.1:8000/core/api/classroom-attendance?classroom_id=${selectedClassroom}&date=${newDate}`
+            );
+            const data = await response.json();
+            setAttendance(data);
+        } catch (error) {
+            console.error("Error fetching attendance for the new date:", error);
+        }
+    } else {
+        // If no classroom is selected, fetch classroom stats for the new date
+        try {
+            const response = await fetch(
+                `http://127.0.0.1:8000/core/api/classroom-attendance-stats?date=${newDate}`
+            );
+            const data = await response.json();
+            setClassrooms(data);
+        } catch (error) {
+            console.error("Error fetching classroom stats for the new date:", error);
+        }
+    }
+};
+
 
     // Handle going back to the calendar view
     const handleBackToCalendar = () => {
@@ -164,11 +188,12 @@ const EnrollmentCalendar = () => {
 
             {view === "day" && (
                 <>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-                        <button onClick={() => navigateDay("prev")}>← Previous</button>
-                        <h2>Classrooms for {selectedDate}</h2>
-                        <button onClick={() => navigateDay("next")}>Next →</button>
+                    <div style={{ textAlign: "center", marginBottom: "20px" }}>
+                        <button onClick={() => navigateDate("prev")}>← Previous</button>
+                        <span style={{ margin: "0 20px" }}>Classrooms for {selectedDate}</span>
+                        <button onClick={() => navigateDate("next")}>Next →</button>
                     </div>
+
 
                     <div style={{ display: "flex", gap: "20px" }}>
                         {/* Classroom Buttons */}
