@@ -15,6 +15,7 @@ from rest_framework import status
 from django.db.models import Q
 from datetime import datetime
 from .serializers import ChildSerializer, FamilySerializer
+from django.shortcuts import get_object_or_404
 
 
 @api_view(['GET'])
@@ -146,6 +147,49 @@ def get_classrooms(request):
 class WithdrawalViewSet(ModelViewSet):
     queryset = Withdrawal.objects.all()
     serializer_class = WithdrawalSerializer
+
+    def create(self, request, *args, **kwargs):
+        # Create the withdrawal entry
+        response = super().create(request, *args, **kwargs)
+
+        # Update the enrollment_end_date in the child table
+        child_id = request.data.get("child")
+        withdrawal_date = request.data.get("withdrawal_date")
+
+        if child_id and withdrawal_date:
+            child = get_object_or_404(Child, id=child_id)
+            child.enrollment_end_date = withdrawal_date
+            child.save()
+
+        return response
+
+    def update(self, request, *args, **kwargs):
+        # Update the withdrawal entry
+        response = super().update(request, *args, **kwargs)
+
+        # Update the enrollment_end_date in the child table
+        child_id = request.data.get("child")
+        withdrawal_date = request.data.get("withdrawal_date")
+
+        if child_id and withdrawal_date:
+            child = get_object_or_404(Child, id=child_id)
+            child.enrollment_end_date = withdrawal_date
+            child.save()
+
+        return response
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+
+        # Reset the enrollment_end_date in the child table
+        if instance.child:
+            child = get_object_or_404(Child, id=instance.child.id)
+            child.enrollment_end_date = None
+            child.save()
+
+        # Delete the withdrawal entry
+        return super().destroy(request, *args, **kwargs)
+
 
 class ChildrenDropdownListView(ListAPIView):
     queryset = Child.objects.all()
