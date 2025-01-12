@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import axios from "axios";
+import Select from "react-select";
 
 interface Family {
     id: number;
@@ -17,8 +18,8 @@ interface Family {
 
 const EditFamily: React.FC = () => {
     const { handleSubmit, control, reset, setValue } = useForm();
-    const [families, setFamilies] = useState<Family[]>([]);
-    const [selectedFamilyId, setSelectedFamilyId] = useState<number | null>(null);
+    const [families, setFamilies] = useState<{ value: number; label: string }[]>([]);
+    const [selectedFamily, setSelectedFamily] = useState<{ value: number; label: string } | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
 
     // Fetch the list of families
@@ -27,7 +28,11 @@ const EditFamily: React.FC = () => {
             .get("http://127.0.0.1:8000/api/families-list/")
             .then((response) => {
                 console.log("Fetched families:", response.data);
-                setFamilies(response.data || []);
+                const formattedFamilies = response.data.map((family: Family) => ({
+                    value: family.id,
+                    label: family.parent_1_name,
+                }));
+                setFamilies(formattedFamilies);
                 setLoading(false);
             })
             .catch((error) => {
@@ -38,9 +43,9 @@ const EditFamily: React.FC = () => {
 
     // Fetch family details when a family is selected
     useEffect(() => {
-        if (selectedFamilyId) {
+        if (selectedFamily) {
             axios
-                .get(`http://127.0.0.1:8000/api/families/${selectedFamilyId}/`)
+                .get(`http://127.0.0.1:8000/api/families/${selectedFamily.value}/`)
                 .then((response) => {
                     const familyData = response.data;
                     console.log("Fetched family details:", familyData);
@@ -56,14 +61,14 @@ const EditFamily: React.FC = () => {
         } else {
             reset(); // Reset form if no family is selected
         }
-    }, [selectedFamilyId, setValue, reset]);
+    }, [selectedFamily, setValue, reset]);
 
     // Handle form submission
     const onSubmit = (data: any) => {
         console.log("Submitting data:", data); // Debugging line
-        if (selectedFamilyId) {
+        if (selectedFamily) {
             axios
-                .put(`http://127.0.0.1:8000/api/families/${selectedFamilyId}/`, data)
+                .put(`http://127.0.0.1:8000/api/families/${selectedFamily.value}/`, data)
                 .then(() => alert("Family updated successfully!"))
                 .catch((error) => console.error("Error updating family:", error));
         } else {
@@ -80,20 +85,16 @@ const EditFamily: React.FC = () => {
                 <p>Loading families...</p>
             ) : families.length > 0 ? (
                 <>
-                    {/* Dropdown to select a family */}
+                    {/* Searchable Dropdown to select a family */}
                     <div>
                         <label>Select a Family</label>
-                        <select
-                            onChange={(e) => setSelectedFamilyId(Number(e.target.value))}
-                            value={selectedFamilyId || ""}
-                        >
-                            <option value="">-- Select a Family --</option>
-                            {families.map((family) => (
-                                <option key={family.id} value={family.id}>
-                                    {family.parent_1_name}
-                                </option>
-                            ))}
-                        </select>
+                        <Select
+                            options={families}
+                            onChange={setSelectedFamily}
+                            value={selectedFamily}
+                            placeholder="Search for a family"
+                            isClearable
+                        />
                     </div>
 
                     {/* Form */}
@@ -183,16 +184,9 @@ const EditFamily: React.FC = () => {
                                 control={control}
                                 defaultValue=""
                                 render={({ field }) => (
-                                    <select
-                                        {...field}
-                                        value={field.value || ""}
-                                        onChange={(e) => {
-                                            console.log("Selected payment preference:", e.target.value); // Debugging
-                                            field.onChange(e.target.value);
-                                        }}
-                                    >
+                                    <select {...field}>
                                         <option value="">-- Select Payment Preference --</option>
-                                        <option value="Direct Payment">Direct Deposit</option>
+                                        <option value="Direct Payment">Direct Payment</option>
                                         <option value="ETF">E-Transfer</option>
                                         <option value="Cheque">Cheque</option>
                                         <option value="Credit Card">Credit Card</option>
@@ -214,7 +208,7 @@ const EditFamily: React.FC = () => {
                         </div>
 
                         {/* Submit Button */}
-                        <button type="submit" disabled={!selectedFamilyId}>
+                        <button type="submit" disabled={!selectedFamily}>
                             Update Family
                         </button>
                     </form>
