@@ -41,6 +41,20 @@ const TransitionsPage: React.FC = () => {
             .finally(() => setLoading(false));
     }, []);
 
+    useEffect(() => {
+        axios.get('http://127.0.0.1:8000/api/transitions/')
+            .then(response => {
+                const fetchedTransitions = response.data.results || response.data;
+                // Sort transitions chronologically by transition_date
+                const sortedTransitions = fetchedTransitions.sort((a: Transition, b: Transition) => 
+                    new Date(a.transition_date).getTime() - new Date(b.transition_date).getTime()
+                );
+                setTransitions(sortedTransitions);
+            })
+            .catch(error => console.error('Error fetching transitions:', error))
+            .finally(() => setLoading(false));
+    }, []);
+
     // Fetch children
     useEffect(() => {
         axios.get('http://127.0.0.1:8000/api/children/dropdown/')

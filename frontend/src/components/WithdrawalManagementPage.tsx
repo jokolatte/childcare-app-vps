@@ -24,7 +24,13 @@ const WithdrawalManagementPage = () => {
     useEffect(() => {
         fetch("http://localhost:8000/api/withdrawals/")
             .then((response) => response.json())
-            .then((data) => setWithdrawals(data.results))
+            .then((data) => {
+                // Sort withdrawals by withdrawal_date (earliest first)
+                const sortedWithdrawals = data.results.sort(
+                    (a, b) => new Date(a.withdrawal_date) - new Date(b.withdrawal_date)
+                );
+                setWithdrawals(sortedWithdrawals);
+            })
             .catch((error) => console.error("Error fetching withdrawals:", error));
     }, []);
 
@@ -90,7 +96,14 @@ const WithdrawalManagementPage = () => {
                     // Refresh withdrawals table
                     fetch("http://localhost:8000/api/withdrawals/")
                         .then((res) => res.json())
-                        .then((data) => setWithdrawals(data.results))
+                        .then((data) =>
+                            setWithdrawals(
+                                data.results.sort(
+                                    (a, b) =>
+                                        new Date(a.withdrawal_date) - new Date(b.withdrawal_date)
+                                )
+                            )
+                        )
                         .catch((error) =>
                             console.error("Error refreshing withdrawals:", error)
                         );
@@ -195,28 +208,43 @@ const WithdrawalManagementPage = () => {
             )}
 
             <h2>Existing Withdrawals</h2>
-            <table>
+            <table style={{ borderCollapse: "collapse", width: "100%", border: "2px solid black" }}>
                 <thead>
                     <tr>
-                        <th>Child</th>
-                        <th>Withdrawal Date</th>
-                        <th>Reason</th>
-                        <th>Status</th>
-                        <th>Notes</th>
-                        <th>Actions</th>
+                        <th style={{ border: "1px solid black", padding: "8px" }}>Child</th>
+                        <th style={{ border: "1px solid black", padding: "8px" }}>Withdrawal Date</th>
+                        <th style={{ border: "1px solid black", padding: "8px" }}>Reason</th>
+                        <th style={{ border: "1px solid black", padding: "8px" }}>Status</th>
+                        <th style={{ border: "1px solid black", padding: "8px" }}>Notes</th>
+                        <th style={{ border: "1px solid black", padding: "8px" }}>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {withdrawals.map((withdrawal) => (
                         <tr key={withdrawal.id}>
-                            <td>{withdrawal.child_name}</td>
-                            <td>{withdrawal.withdrawal_date}</td>
-                            <td>{withdrawal.withdrawal_reason}</td>
-                            <td>{withdrawal.status}</td>
-                            <td>{withdrawal.notes}</td>
-                            <td>
+                            <td style={{ border: "1px solid black", padding: "8px" }}>
+                                {withdrawal.child_name}
+                            </td>
+                            <td style={{ border: "1px solid black", padding: "8px" }}>
+                                {withdrawal.withdrawal_date}
+                            </td>
+                            <td style={{ border: "1px solid black", padding: "8px" }}>
+                                {withdrawal.withdrawal_reason}
+                            </td>
+                            <td style={{ border: "1px solid black", padding: "8px" }}>
+                                {withdrawal.status}
+                            </td>
+                            <td style={{ border: "1px solid black", padding: "8px" }}>
+                                {withdrawal.notes}
+                            </td>
+                            <td style={{ border: "1px solid black", padding: "8px" }}>
                                 <button onClick={() => handleEdit(withdrawal)}>Edit</button>
-                                <button onClick={() => handleDelete(withdrawal.id)}>Delete</button>
+                                <button
+                                    style={{ marginLeft: "8px" }}
+                                    onClick={() => handleDelete(withdrawal.id)}
+                                >
+                                    Delete
+                                </button>
                             </td>
                         </tr>
                     ))}
