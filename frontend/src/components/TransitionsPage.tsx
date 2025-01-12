@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import Select from 'react-select';
 
 interface Transition {
     id: number;
@@ -35,11 +36,28 @@ const TransitionsPage: React.FC = () => {
 
     // Fetch transitions
     useEffect(() => {
-        axios.get('http://127.0.0.1:8000/api/transitions/')
-            .then(response => setTransitions(response.data.results || response.data))
-            .catch(error => console.error('Error fetching transitions:', error))
-            .finally(() => setLoading(false));
+        const fetchAllChildren = async () => {
+            let allChildren = [];
+            let url = "http://127.0.0.1:8000/api/children-list/";
+            
+            while (url) {
+                try {
+                    const response = await fetch(url);
+                    const data = await response.json();
+                    allChildren = [...allChildren, ...data.results];
+                    url = data.next; // Set to the next page URL if available, else null
+                } catch (error) {
+                    console.error("Error fetching children:", error);
+                    break;
+                }
+            }
+    
+            setChildren(allChildren);
+        };
+    
+        fetchAllChildren();
     }, []);
+    
 
     useEffect(() => {
         axios.get('http://127.0.0.1:8000/api/transitions/')
@@ -152,15 +170,31 @@ const TransitionsPage: React.FC = () => {
         <div>
             <h1>Transitions</h1>
 
-            <label htmlFor="child-select">Filter by Child:</label>
-            <select id="child-select" onChange={handleChildSelect} value={selectedChild?.id || ''}>
-                <option value="">-- Select a Child --</option>
-                {children.map(child => (
-                    <option key={child.id} value={child.id}>
-                        {child.first_name} {child.last_name}
-                    </option>
-                ))}
-            </select>
+<div>
+    <label htmlFor="child-select">Filter by Child:</label>
+    <Select
+        id="child-select"
+        options={children.map((child) => ({
+            value: child.id,
+            label: `${child.first_name} ${child.last_name}`,
+        }))}
+        onChange={(selectedOption) =>
+            setSelectedChild(
+                selectedOption
+                    ? children.find((child) => child.id === selectedOption.value)
+                    : null
+            )
+        }
+        value={children
+            .map((child) => ({
+                value: child.id,
+                label: `${child.first_name} ${child.last_name}`,
+            }))
+            .find((option) => option.value === selectedChild?.id) || null}
+        isClearable
+    />
+</div>
+
 
             {selectedChild && (
                 <div>
