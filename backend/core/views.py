@@ -61,6 +61,14 @@ def classroom_attendance(request):
         return Response({"error": "Invalid date format. Use YYYY-MM-DD."}, status=400)
 
     try:
+        from core.models import Calendar  # Make sure Calendar is imported
+        is_weekday = Calendar.objects.get(date=date).is_weekday
+        if not is_weekday:
+            return Response({"error": "Attendance is not calculated for weekends."}, status=400)
+    except Calendar.DoesNotExist:
+        return Response({"error": "Calendar data not found for the given date."}, status=404)
+
+    try:
         classroom = Classroom.objects.get(id=classroom_id)
     except Classroom.DoesNotExist:
         return Response({"error": "Classroom not found."}, status=404)
