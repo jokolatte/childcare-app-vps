@@ -37,14 +37,7 @@ class WithdrawalSerializer(serializers.ModelSerializer):
     def get_child_name(self, obj):
         return f"{obj.child.first_name} {obj.child.last_name}"  # Adjust based on your Child model
     
-    def validate(self, data):
-        # Check for duplicate withdrawal entries
-        child = data.get("child")
-        if self.instance is None and Withdrawal.objects.filter(child=child).exists():
-            raise serializers.ValidationError(
-                {"child": "A withdrawal entry already exists for this child."}
-            )
-        return data
+    
 
 class ChildDropdownSerializer(serializers.ModelSerializer):
     class Meta:

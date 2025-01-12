@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import Select from "react-select";
 
 const WithdrawalManagementPage = () => {
     const [children, setChildren] = useState([]);
@@ -14,11 +15,28 @@ const WithdrawalManagementPage = () => {
 
     // Fetch children for dropdown
     useEffect(() => {
-        fetch("http://localhost:8000/api/children/")
-            .then((response) => response.json())
-            .then((data) => setChildren(data.results))
-            .catch((error) => console.error("Error fetching children:", error));
+        const fetchAllChildren = async () => {
+            let allChildren = [];
+            let url = "http://127.0.0.1:8000/api/children-list/";
+            
+            while (url) {
+                try {
+                    const response = await fetch(url);
+                    const data = await response.json();
+                    allChildren = [...allChildren, ...data.results];
+                    url = data.next; // Set to the next page URL if available, else null
+                } catch (error) {
+                    console.error("Error fetching children:", error);
+                    break;
+                }
+            }
+    
+            setChildren(allChildren);
+        };
+    
+        fetchAllChildren();
     }, []);
+    
 
     // Fetch withdrawals for display
     useEffect(() => {
@@ -148,15 +166,25 @@ const WithdrawalManagementPage = () => {
         <div>
             <h1>Withdrawal Management</h1>
             <div>
-                <label htmlFor="child">Select a Child:</label>
-                <select id="child" onChange={handleChildSelection} value={selectedChildId || ""}>
-                    <option value="">-- Select a Child --</option>
-                    {children.map((child) => (
-                        <option key={child.id} value={child.id}>
-                            {child.first_name} {child.last_name}
-                        </option>
-                    ))}
-                </select>
+                <div>
+    <label htmlFor="child">Select a Child:</label>
+    <Select
+        options={children.map((child) => ({
+            value: child.id,
+            label: `${child.first_name} ${child.last_name}`,
+        }))}
+        onChange={(selectedOption) =>
+            setSelectedChildId(selectedOption ? selectedOption.value : null)
+        }
+        value={children
+            .map((child) => ({
+                value: child.id,
+                label: `${child.first_name} ${child.last_name}`,
+            }))
+            .find((option) => option.value === selectedChildId) || null}
+        isClearable
+    />
+</div>
             </div>
             {(selectedChildId || editingWithdrawalId) && (
                 <form onSubmit={handleSubmit}>
