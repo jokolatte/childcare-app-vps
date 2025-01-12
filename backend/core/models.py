@@ -49,6 +49,16 @@ class Transition(models.Model):
     age_at_transition = models.IntegerField(null=True, blank=True)  # Optional field
     notes = models.TextField(null=True, blank=True)
     status = models.CharField(max_length=20, choices=[('Planned', 'Planned'), ('Completed', 'Completed')])
+    processed = models.BooleanField(default=False)  # Tracks if the transition has been applied
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['child'],
+                condition=models.Q(processed=False),
+                name='unique_unprocessed_transition'
+            )
+        ]
 
     def __str__(self):
         return f"{self.child} transitions to {self.next_classroom} on {self.transition_date}"

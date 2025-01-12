@@ -78,19 +78,19 @@ const TransitionsPage: React.FC = () => {
 
     const handleAddOrUpdateTransition = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-
+    
         if (!selectedChild || !nextClassroom || !dateOfMove) {
             alert('Please fill out all required fields.');
             return;
         }
-
+    
         const transitionData = {
             child: selectedChild.id,
-            next_classroom: parseInt(nextClassroom), // Use classroom ID
+            next_classroom: nextClassroom,
             transition_date: dateOfMove,
             notes,
         };
-
+    
         try {
             if (editingTransitionId) {
                 // Update transition
@@ -105,10 +105,15 @@ const TransitionsPage: React.FC = () => {
             }
             resetForm();
         } catch (error) {
-            console.error('Error submitting transition:', error);
-            alert('Failed to submit transition.');
+            if (error.response && error.response.data) {
+                alert(error.response.data.non_field_errors || 'Failed to submit transition.');
+            } else {
+                alert('Failed to submit transition.');
+            }
         }
     };
+    
+    
 
     const handleEditTransition = (transition: Transition) => {
         const child = children.find(c => c.first_name + ' ' + c.last_name === transition.child_name);

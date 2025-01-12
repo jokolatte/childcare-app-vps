@@ -50,7 +50,7 @@ class TransitionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Transition
         fields = ['id', 'child', 'child_name', 'next_classroom', 'next_classroom_name', 'transition_date', 'notes', 'age_at_transition']
-
+    
     def get_child_name(self, obj):
         return f"{obj.child.first_name} {obj.child.last_name}"
 
@@ -65,6 +65,12 @@ class TransitionSerializer(serializers.ModelSerializer):
             age_in_months = (transition_date.year - dob.year) * 12 + (transition_date.month - dob.month)
             return age_in_months
         return None
+
+    def validate(self, data):
+        # Check for an existing unprocessed transition for the same child
+        if Transition.objects.filter(child=data['child'], processed=False).exists():
+            raise serializers.ValidationError("A transition for this child is already pending.")
+        return data
 
 class ChildSerializer(serializers.ModelSerializer):
     family = serializers.PrimaryKeyRelatedField(queryset=Family.objects.all())
