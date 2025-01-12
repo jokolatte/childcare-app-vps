@@ -17,6 +17,7 @@ from datetime import datetime
 from .serializers import ChildSerializer, FamilySerializer
 from django.shortcuts import get_object_or_404
 from datetime import date, timedelta
+from django.utils.timezone import now
 
 @api_view(['GET'])
 def upcoming_enrollments(request):
@@ -112,9 +113,6 @@ def classroom_attendance(request):
     return Response(data)
 
 
-
-
-
 @api_view(['GET'])
 def classroom_attendance_stats(request):
     date_str = request.GET.get('date')
@@ -156,7 +154,6 @@ def classroom_attendance_stats(request):
         })
 
     return Response(stats)
-
 
 
 
@@ -244,18 +241,28 @@ def get_classrooms(request):
     classrooms = Classroom.objects.all().values('id', 'classroom_name')
     return Response(list(classrooms))
 
+from django.utils.timezone import now
+
 class WithdrawalViewSet(ModelViewSet):
-    queryset = Withdrawal.objects.all()
+    queryset = Withdrawal.objects.filter(withdrawal_date__gte=now().date())  # Exclude past withdrawals
     serializer_class = WithdrawalSerializer
 
     def create(self, request, *args, **kwargs):
-        # Create the withdrawal entry
-        response = super().create(request, *args, **kwargs)
-
-        # Update the enrollment_end_date in the child table
+        # Get the child ID from the request data
         child_id = request.data.get("child")
         withdrawal_date = request.data.get("withdrawal_date")
 
+        # Prevent duplicate withdrawals for the same child
+        if Withdrawal.objects.filter(child_id=child_id).exists():
+            return Response(
+                {"error": "A withdrawal entry already exists for this child."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Proceed to create the withdrawal entry
+        response = super().create(request, *args, **kwargs)
+
+        # Update the enrollment_end_date in the child table
         if child_id and withdrawal_date:
             child = get_object_or_404(Child, id=child_id)
             child.enrollment_end_date = withdrawal_date
@@ -289,6 +296,7 @@ class WithdrawalViewSet(ModelViewSet):
 
         # Delete the withdrawal entry
         return super().destroy(request, *args, **kwargs)
+
 
 
 class ChildrenDropdownListView(ListAPIView):
