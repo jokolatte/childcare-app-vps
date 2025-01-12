@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import axios from "axios";
+import Select from "react-select";
 
 interface Child {
     id: number;
@@ -27,16 +28,28 @@ const EditChild: React.FC = () => {
 
     // Fetch the list of children and classrooms from the backend
     useEffect(() => {
-        axios
-            .get("http://127.0.0.1:8000/api/children-list/")
-            .then((response) => setChildren(response.data.results))
-            .catch((error) => console.error("Error fetching children:", error));
-
-        axios
-            .get("http://127.0.0.1:8000/api/classrooms-list/")
-            .then((response) => setClassrooms(response.data))
-            .catch((error) => console.error("Error fetching classrooms:", error));
+        const fetchAllChildren = async () => {
+            let allChildren = [];
+            let url = "http://127.0.0.1:8000/api/children-list/";
+            
+            while (url) {
+                try {
+                    const response = await fetch(url);
+                    const data = await response.json();
+                    allChildren = [...allChildren, ...data.results];
+                    url = data.next; // Set to the next page URL if available, else null
+                } catch (error) {
+                    console.error("Error fetching children:", error);
+                    break;
+                }
+            }
+    
+            setChildren(allChildren);
+        };
+    
+        fetchAllChildren();
     }, []);
+    
 
     // Fetch child details when a child is selected
     useEffect(() => {
@@ -74,19 +87,24 @@ const EditChild: React.FC = () => {
 
             {/* Dropdown to select a child */}
             <div>
-                <label>Select a Child</label>
-                <select
-                    onChange={(e) => setSelectedChildId(Number(e.target.value))}
-                    value={selectedChildId || ""}
-                >
-                    <option value="">-- Select a Child --</option>
-                    {children.map((child) => (
-                        <option key={child.id} value={child.id}>
-                            {child.first_name} {child.last_name}
-                        </option>
-                    ))}
-                </select>
-            </div>
+    <label htmlFor="child">Select a Child:</label>
+    <Select
+        options={children.map((child) => ({
+            value: child.id,
+            label: `${child.first_name} ${child.last_name}`,
+        }))}
+        onChange={(selectedOption) =>
+            setSelectedChildId(selectedOption ? selectedOption.value : null)
+        }
+        value={children
+            .map((child) => ({
+                value: child.id,
+                label: `${child.first_name} ${child.last_name}`,
+            }))
+            .find((option) => option.value === selectedChildId) || null}
+        isClearable
+    />
+</div>
 
             <form onSubmit={handleSubmit(onSubmit)} style={{ marginTop: "2rem" }}>
                 {/* First Name */}
