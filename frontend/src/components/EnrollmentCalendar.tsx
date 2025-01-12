@@ -81,17 +81,19 @@ const EnrollmentCalendar = () => {
     // Handle date click
     const handleDateClick = (info) => {
         const clickedDate = info.dateStr;
-        
-        // Check if the selected date is a weekend
-        const selectedEvent = events.find((event) => event.start === selectedDate);
-        if (!selectedEvent || selectedEvent.is_weekday === false) {
-        alert("Attendance is not available for weekends."); // Optional feedback
-        return; // Exit the function early
-    }
-
-        setSelectedDate(clickedDate);
-        fetchClassroomsForDate(clickedDate);
-        setView("day"); // Switch to day view
+    
+        // Find the event corresponding to the clicked date
+        const event = events.find((e) => e.start === clickedDate);
+    
+        if (event && event.is_weekday) {
+            // Proceed with displaying classrooms for the selected date
+            setSelectedDate(clickedDate);
+            fetchClassroomsForDate(clickedDate);
+            setView("day"); // Switch to day view
+        } else {
+            // Show a message for weekends
+            alert("Weekends are not available for selection.");
+        }
     };
 
     // Handle classroom click
@@ -101,36 +103,47 @@ const EnrollmentCalendar = () => {
     };
 
     // Navigate between dates and refresh classroom attendance
-const navigateDate = async (direction) => {
-    const currentDate = new Date(selectedDate);
-    currentDate.setDate(currentDate.getDate() + (direction === "next" ? 1 : -1));
-    const newDate = currentDate.toISOString().split("T")[0];
-    setSelectedDate(newDate);
-
-    if (selectedClassroom) {
-        // If a classroom is selected, fetch its attendance for the new date
-        try {
-            const response = await fetch(
-                `http://127.0.0.1:8000/core/api/classroom-attendance?classroom_id=${selectedClassroom}&date=${newDate}`
-            );
-            const data = await response.json();
-            setAttendance(data);
-        } catch (error) {
-            console.error("Error fetching attendance for the new date:", error);
+    const navigateDate = async (direction) => {
+        let currentDate = new Date(selectedDate);
+    
+        while (true) {
+            // Move forward or backward by 1 day
+            currentDate.setDate(currentDate.getDate() + (direction === "next" ? 1 : -1));
+            const newDate = currentDate.toISOString().split("T")[0];
+    
+            // Check if the new date is a weekday
+            const event = events.find((e) => e.start === newDate);
+            if (event && event.is_weekday) {
+                setSelectedDate(newDate);
+    
+                if (selectedClassroom) {
+                    // Fetch attendance for the selected classroom
+                    try {
+                        const response = await fetch(
+                            `http://127.0.0.1:8000/core/api/classroom-attendance?classroom_id=${selectedClassroom}&date=${newDate}`
+                        );
+                        const data = await response.json();
+                        setAttendance(data);
+                    } catch (error) {
+                        console.error("Error fetching attendance for the new date:", error);
+                    }
+                } else {
+                    // Fetch classroom stats for the new date
+                    try {
+                        const response = await fetch(
+                            `http://127.0.0.1:8000/core/api/classroom-attendance-stats?date=${newDate}`
+                        );
+                        const data = await response.json();
+                        setClassroomsForDate(data);
+                    } catch (error) {
+                        console.error("Error fetching classroom stats for the new date:", error);
+                    }
+                }
+                break; // Exit the loop once a valid weekday is found
+            }
         }
-    } else {
-        // If no classroom is selected, fetch classroom stats for the new date
-        try {
-            const response = await fetch(
-                `http://127.0.0.1:8000/core/api/classroom-attendance-stats?date=${newDate}`
-            );
-            const data = await response.json();
-            setClassrooms(data);
-        } catch (error) {
-            console.error("Error fetching classroom stats for the new date:", error);
-        }
-    }
-};
+    };
+    
 
 
     // Handle going back to the calendar view

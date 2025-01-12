@@ -201,7 +201,7 @@ def classrooms_for_date(request):
 def calendar_stats(request):
     # Get parameters from the request
     classroom_id = request.GET.get('classroom_id', None)
-    open_dates = Calendar.objects.filter(is_closed=False).values('date')
+    open_dates = Calendar.objects.filter(is_closed=False).values('date', 'is_weekday')
 
     stats = []
 
@@ -221,6 +221,7 @@ def calendar_stats(request):
                     "date": date,
                     "total_capacity": classroom.max_capacity,
                     "total_enrolled": total_enrolled,
+                    "is_weekday": entry['is_weekday']
                 })
         except Classroom.DoesNotExist:
             return Response({"error": "Classroom not found."}, status=404)
@@ -240,6 +241,7 @@ def calendar_stats(request):
                 "date": date,
                 "total_capacity": total_capacity,
                 "total_enrolled": total_enrolled,
+                "is_weekday": entry['is_weekday'],
             })
 
     return Response(stats)
