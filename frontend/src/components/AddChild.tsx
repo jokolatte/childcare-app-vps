@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import Select from "react-select";
 import { useForm, Controller } from "react-hook-form";
 import axios from "axios";
 
@@ -15,7 +16,7 @@ interface Family {
 const AddChild: React.FC = () => {
     const { handleSubmit, control, reset, watch } = useForm();
     const [classrooms, setClassrooms] = useState<Classroom[]>([]);
-    const [families, setFamilies] = useState<Family[]>([]);
+    const [families, setFamilies] = useState<{ value: number; label: string }[]>([]);
     const [isExistingFamily, setIsExistingFamily] = useState<boolean>(false);
     const [successMessage, setSuccessMessage] = useState<string>("");
 
@@ -31,7 +32,13 @@ const AddChild: React.FC = () => {
 
         axios
             .get("http://127.0.0.1:8000/api/families-list/")
-            .then((response) => setFamilies(response.data))
+            .then((response) => {
+                const formattedFamilies = response.data.map((family: Family) => ({
+                    value: family.id,
+                    label: family.parent_1_name,
+                }));
+                setFamilies(formattedFamilies);
+            })
             .catch((error) => console.error("Error fetching families:", error));
     }, []);
 
@@ -50,25 +57,8 @@ const AddChild: React.FC = () => {
         // Convert "yes"/"no" to boolean for `fob_required`
         cleanedData.fob_required = cleanedData.fob_required === "yes";
 
-        if (cleanedData.existing_family) {
-            // Remove fields irrelevant to existing families
-            delete cleanedData.parent_1_name;
-            delete cleanedData.parent_1_phone;
-            delete cleanedData.parent_1_email;
-            delete cleanedData.parent_2_name;
-            delete cleanedData.parent_2_phone;
-            delete cleanedData.parent_2_email;
-            delete cleanedData.address;
-            delete cleanedData.payment_preferences;
-
-            // Ensure `family` field is included
-            if (!cleanedData.family) {
-                console.error("Family ID is missing in cleanedData.");
-                alert("Please select an existing family before submitting.");
-                return;
-            }
-        } else {
-            // Remove `family` field if creating a new family
+        // Remove `family` field if a new family is being created
+        if (!cleanedData.existing_family) {
             delete cleanedData.family;
         }
 
@@ -149,109 +139,110 @@ const AddChild: React.FC = () => {
                 </div>
 
                 {/* Existing Family Toggle */}
-<div>
-    <label>Existing Family?</label>
-    <Controller
-        name="existing_family"
-        control={control}
-        defaultValue={false}
-        render={({ field }) => (
-            <select
-                {...field}
-                onChange={(e) => {
-                    const isExisting = e.target.value === "true";
-                    setIsExistingFamily(isExisting);
-                    field.onChange(isExisting); // Update form state
-                }}
-            >
-                <option value="false">No</option>
-                <option value="true">Yes</option>
-            </select>
-        )}
-    />
-</div>
+                <div>
+                    <label>Existing Family?</label>
+                    <Controller
+                        name="existing_family"
+                        control={control}
+                        defaultValue={false}
+                        render={({ field }) => (
+                            <select
+                                {...field}
+                                onChange={(e) => {
+                                    const isExisting = e.target.value === "true";
+                                    setIsExistingFamily(isExisting);
+                                    field.onChange(isExisting); // Update form state
+                                }}
+                            >
+                                <option value="false">No</option>
+                                <option value="true">Yes</option>
+                            </select>
+                        )}
+                    />
+                </div>
 
-{/* New Family Fields */}
-{!isExistingFamily && (
+                {/* Existing Family Dropdown */}
+{isExistingFamily && (
     <div>
-        <h3>New Family Information</h3>
-        <div>
-            <label>Parent 1 Name</label>
-            <Controller
-                name="parent_1_name"
-                control={control}
-                defaultValue=""
-                render={({ field }) => <input {...field} />}
-            />
-        </div>
-        <div>
-            <label>Parent 1 Phone</label>
-            <Controller
-                name="parent_1_phone"
-                control={control}
-                defaultValue=""
-                render={({ field }) => <input type="tel" {...field} />}
-            />
-        </div>
-        <div>
-            <label>Parent 1 Email</label>
-            <Controller
-                name="parent_1_email"
-                control={control}
-                defaultValue=""
-                render={({ field }) => <input type="email" {...field} />}
-            />
-        </div>
-        <div>
-            <label>Address</label>
-            <Controller
-                name="address"
-                control={control}
-                defaultValue=""
-                render={({ field }) => <textarea {...field} />}
-            />
-        </div>
-        <div>
-            <label>Payment Preferences</label>
-            <Controller
-                name="payment_preferences"
-                control={control}
-                defaultValue=""
-                render={({ field }) => (
-                    <select {...field}>
-                        <option value="">Choose one</option>
-                        <option value="EFT">EFT</option>
-                        <option value="Credit Card">Credit Card</option>
-                        <option value="Cash">Cash</option>
-                        <option value="Cheque">Cheque</option>
-                        <option value="Direct Payment">Direct Payment</option>
-                    </select>
-                )}
-            />
-        </div>
+        <label>Select Existing Family</label>
+        <Controller
+            name="family"
+            control={control}
+            defaultValue={null}
+            render={({ field }) => (
+                <Select
+                    {...field}
+                    options={families}
+                    onChange={(selectedOption) => {
+                        field.onChange(selectedOption?.value); // Update form state with the selected family ID
+                    }}
+                    value={families.find(family => family.value === field.value) || null} // Bind selected value
+                    placeholder="Search for a family"
+                    isClearable
+                />
+            )}
+        />
     </div>
 )}
 
-
-                {/* Existing Family Dropdown */}
-                {isExistingFamily && (
+                {/* New Family Fields */}
+                {!isExistingFamily && (
                     <div>
-                        <label>Select Existing Family</label>
-                        <Controller
-                            name="family"
-                            control={control}
-                            defaultValue=""
-                            render={({ field }) => (
-                                <select {...field}>
-                                    <option value="">Select a Family</option>
-                                    {families.map((family) => (
-                                        <option key={family.id} value={family.id}>
-                                            {family.parent_1_name}
-                                        </option>
-                                    ))}
-                                </select>
-                            )}
-                        />
+                        <h3>New Family Information</h3>
+                        <div>
+                            <label>Parent 1 Name</label>
+                            <Controller
+                                name="parent_1_name"
+                                control={control}
+                                defaultValue=""
+                                render={({ field }) => <input {...field} />}
+                            />
+                        </div>
+                        <div>
+                            <label>Parent 1 Phone</label>
+                            <Controller
+                                name="parent_1_phone"
+                                control={control}
+                                defaultValue=""
+                                render={({ field }) => <input type="tel" {...field} />}
+                            />
+                        </div>
+                        <div>
+                            <label>Parent 1 Email</label>
+                            <Controller
+                                name="parent_1_email"
+                                control={control}
+                                defaultValue=""
+                                render={({ field }) => <input type="email" {...field} />}
+                            />
+                        </div>
+                        <div>
+                            <label>Address</label>
+                            <Controller
+                                name="address"
+                                control={control}
+                                defaultValue=""
+                                render={({ field }) => <textarea {...field} />}
+                            />
+                        </div>
+                        <div>
+                            <label>Payment Preferences</label>
+                            <Controller
+                                name="payment_preferences"
+                                control={control}
+                                defaultValue=""
+                                render={({ field }) => (
+                                    <select {...field}>
+                                        <option value="">Choose one</option>
+                                        <option value="EFT">EFT</option>
+                                        <option value="Credit Card">Credit Card</option>
+                                        <option value="Cash">Cash</option>
+                                        <option value="Cheque">Cheque</option>
+                                        <option value="Direct Payment">Direct Payment</option>
+                                    </select>
+                                )}
+                            />
+                        </div>
                     </div>
                 )}
 
