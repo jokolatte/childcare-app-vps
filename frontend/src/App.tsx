@@ -8,7 +8,7 @@ import EditFamily from './components/EditFamily';
 import TransitionsPage from './components/TransitionsPage';
 import WithdrawalManagementPage from './components/WithdrawalManagementPage';
 import EnrollmentCalendar from "./components/EnrollmentCalendar";
-
+import ChildMovementSummary from './components/ChildMovementSummary';
 
 const App: React.FC = () => {
     return (
@@ -25,6 +25,7 @@ const App: React.FC = () => {
                         <Route path="/transitions" element={<TransitionsPage />} />
                         <Route path="/withdrawals" element={<WithdrawalManagementPage />} />
                         <Route path="/calendar" element={<EnrollmentCalendar />} /> 
+                        <Route path="/child-movement-summary" element={<ChildMovementSummary />} />
                         <Route path="*" element={<div>404 Not Found</div>} />
                     </Routes>
                 </div>

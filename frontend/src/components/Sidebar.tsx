@@ -30,8 +30,13 @@ const Sidebar: React.FC = () => {
             name: "Enrollment Management",
             icon: <AiOutlineCalendar />,
             subMenu: [
+                { name: "New Enrollment", path: "/add-child" },
+                { name: "Edit Child Info", path: "/edit-child" },
+                { name: "Edit Family Info", path: "/edit-family" },
+                { name: "Enrollment Calendar", path: "/calendar" },
+                { name: "Add/Edit Transitions", path: "/transitions" },
+                { name: "Add/Edit Withdrawals", path: "/withdrawals" },
                 { name: "Create/Edit Classroom", path: "/classrooms" },
-                { name: "Add Child", path: "/add-child" },
             ],
         },
         {

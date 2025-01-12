@@ -18,6 +18,32 @@ from .serializers import ChildSerializer, FamilySerializer
 from django.shortcuts import get_object_or_404
 from datetime import date, timedelta
 
+@api_view(['GET'])
+def upcoming_enrollments(request):
+    # Get today's date
+    today = date.today()
+    print(f"Fetching upcoming enrollments from {today}")  # Debug statement
+
+    # Query for children with future enrollment start dates
+    upcoming_enrollments = Child.objects.filter(
+        enrollment_start_date__gte=today
+    ).order_by('enrollment_start_date')  # Order by enrollment date ascending
+
+    # Build the response data
+    data = []
+    for child in upcoming_enrollments:
+        data.append({
+            "enrollment_start_date": child.enrollment_start_date,
+            "child_name": f"{child.first_name} {child.last_name}",
+            "date_of_birth": child.date_of_birth,
+            "classroom_name": child.classroom.classroom_name if child.classroom else "N/A",
+            "allergy_info": child.allergy_info,
+            "notes": child.notes,
+        })
+
+    # Return the response
+    return Response(data)
+
 
 @api_view(['GET'])
 def classroom_attendance(request):
