@@ -39,7 +39,9 @@ const EnrollmentCalendar = () => {
             const response = await fetch(url);
             const data = await response.json();
 
-            const calendarEvents = data.map((item) => ({
+            const calendarEvents = data
+                .filter((item) => item.is_weekday) // Exclude weekends
+                .map((item) => ({
                 title: `${item.total_enrolled}/${item.total_capacity}`,
                 start: item.date,
                 color: item.is_stat_holiday ? "orange" : item.is_weekday ? "green" : "red",

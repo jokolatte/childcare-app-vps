@@ -52,7 +52,7 @@ urlpatterns = [
     path('api/classrooms-for-date', classrooms_for_date, name='classrooms_for_date'),
     path('api/classroom-attendance', classroom_attendance, name='classroom_attendance'),
     path('api/classrooms', get_classrooms, name='get_classrooms'),
-    path('api/enrollment/stats', calendar_stats, name='calendar_stats'),
+    path('api/enrollment/stats/', calendar_stats, name='calendar_stats'),
     path('api/', include(router.urls)),
     path('api/add-child/', AddChildView.as_view(), name='add_child'),
     path('api/families/', FamilyListCreateView.as_view(), name='family-list-create'),

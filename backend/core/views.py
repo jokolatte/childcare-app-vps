@@ -61,10 +61,16 @@ def classroom_attendance(request):
         return Response({"error": "Invalid date format. Use YYYY-MM-DD."}, status=400)
 
     try:
-        from core.models import Calendar  # Make sure Calendar is imported
-        is_weekday = Calendar.objects.get(date=date).is_weekday
-        if not is_weekday:
+        from core.models import Calendar  # Ensure Calendar is imported
+        calendar_entry = Calendar.objects.get(date=date)
+
+        # Check if the date is a weekday and not a stat holiday
+        if not calendar_entry.is_weekday:
             return Response({"error": "Attendance is not calculated for weekends."}, status=400)
+
+        if calendar_entry.is_stat_holiday:
+            return Response({"error": "Attendance is not calculated for stat holidays."}, status=400)
+
     except Calendar.DoesNotExist:
         return Response({"error": "Calendar data not found for the given date."}, status=404)
 
@@ -119,6 +125,7 @@ def classroom_attendance(request):
         })
 
     return Response(data)
+
 
 
 @api_view(['GET'])
@@ -197,11 +204,12 @@ def classrooms_for_date(request):
 
     return Response(data)
 
+
 @api_view(['GET'])
 def calendar_stats(request):
     # Get parameters from the request
     classroom_id = request.GET.get('classroom_id', None)
-    open_dates = Calendar.objects.filter(is_closed=False).values('date', 'is_weekday')
+    open_dates = Calendar.objects.values('date', 'is_weekday', 'is_stat_holiday')
 
     stats = []
 
@@ -210,7 +218,7 @@ def calendar_stats(request):
         try:
             classroom = Classroom.objects.get(id=classroom_id)
             for entry in open_dates:
-                date = entry['date']
+                date = entry['date']  # Use dictionary access here
                 total_enrolled = Child.objects.filter(
                     Q(enrollment_end_date__isnull=True) | Q(enrollment_end_date__gte=date),
                     enrollment_start_date__lte=date,
@@ -221,7 +229,8 @@ def calendar_stats(request):
                     "date": date,
                     "total_capacity": classroom.max_capacity,
                     "total_enrolled": total_enrolled,
-                    "is_weekday": entry['is_weekday']
+                    "is_weekday": entry['is_weekday'],  # Include is_weekday field
+                    "is_stat_holiday": entry['is_stat_holiday'],  # Include is_stat_holiday field
                 })
         except Classroom.DoesNotExist:
             return Response({"error": "Classroom not found."}, status=404)
@@ -231,7 +240,7 @@ def calendar_stats(request):
         total_capacity = sum(c.max_capacity for c in classrooms)
 
         for entry in open_dates:
-            date = entry['date']
+            date = entry['date']  # Use dictionary access here
             total_enrolled = Child.objects.filter(
                 Q(enrollment_end_date__isnull=True) | Q(enrollment_end_date__gte=date),
                 enrollment_start_date__lte=date
@@ -241,10 +250,12 @@ def calendar_stats(request):
                 "date": date,
                 "total_capacity": total_capacity,
                 "total_enrolled": total_enrolled,
-                "is_weekday": entry['is_weekday'],
+                "is_weekday": entry['is_weekday'],  # Include is_weekday field
+                "is_stat_holiday": entry['is_stat_holiday'],  # Include is_stat_holiday field
             })
 
     return Response(stats)
+
 
 @api_view(['GET'])
 def get_classrooms(request):

@@ -84,7 +84,6 @@ class Command(BaseCommand):
                 defaults={
                     "is_stat_holiday": True,
                     "is_closed": True,
-                    "stat_substitution_date": substitution_date if is_weekend else None,
                 },
             )
 
@@ -94,7 +93,7 @@ class Command(BaseCommand):
                     date=substitution_date,
                     defaults={
                         "is_stat_holiday": True,
-                        "is_closed": True,
+                        "is_closed": True, # Substitution days are also closed
                     },
                 )
 
