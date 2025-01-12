@@ -32,7 +32,6 @@ const ChildMovementSummary: React.FC = () => {
     const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
 
-    // Fetch data from APIs
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -40,18 +39,23 @@ const ChildMovementSummary: React.FC = () => {
 
                 // Fetch upcoming enrollments
                 const enrollmentsResponse = await axios.get('http://127.0.0.1:8000/api/upcoming_enrollments/');
-                console.log('Enrollments:', enrollmentsResponse.data);
                 setEnrollments(enrollmentsResponse.data.results || enrollmentsResponse.data);
 
                 // Fetch upcoming transitions
                 const transitionsResponse = await axios.get('http://127.0.0.1:8000/api/transitions/');
-                console.log('Transitions:', transitionsResponse.data);
-                setTransitions(transitionsResponse.data.results || transitionsResponse.data);
+                const sortedTransitions = (transitionsResponse.data.results || transitionsResponse.data).sort(
+                    (a: Transition, b: Transition) =>
+                        new Date(a.transition_date).getTime() - new Date(b.transition_date).getTime()
+                );
+                setTransitions(sortedTransitions);
 
                 // Fetch upcoming withdrawals
                 const withdrawalsResponse = await axios.get('http://127.0.0.1:8000/api/withdrawals/');
-                console.log('Withdrawals:', withdrawalsResponse.data);
-                setWithdrawals(withdrawalsResponse.data.results || withdrawalsResponse.data);
+                const sortedWithdrawals = (withdrawalsResponse.data.results || withdrawalsResponse.data).sort(
+                    (a: Withdrawal, b: Withdrawal) =>
+                        new Date(a.withdrawal_date).getTime() - new Date(b.withdrawal_date).getTime()
+                );
+                setWithdrawals(sortedWithdrawals);
             } catch (error) {
                 console.error('Error fetching child movement data:', error);
             } finally {
@@ -61,6 +65,19 @@ const ChildMovementSummary: React.FC = () => {
 
         fetchData();
     }, []);
+
+    const tableStyle = {
+        border: '1px solid black',
+        borderCollapse: 'collapse',
+        width: '100%',
+        marginBottom: '20px',
+    };
+
+    const thTdStyle = {
+        border: '1px solid black',
+        padding: '8px',
+        textAlign: 'left' as const,
+    };
 
     if (loading) return <div>Loading...</div>;
 
@@ -72,26 +89,26 @@ const ChildMovementSummary: React.FC = () => {
             <section>
                 <h2>Upcoming New Enrollments</h2>
                 {enrollments.length > 0 ? (
-                    <table>
+                    <table style={tableStyle}>
                         <thead>
                             <tr>
-                                <th>Start Date</th>
-                                <th>Child Name</th>
-                                <th>Date of Birth</th>
-                                <th>Classroom</th>
-                                <th>Allergy Info</th>
-                                <th>Notes</th>
+                                <th style={thTdStyle}>Start Date</th>
+                                <th style={thTdStyle}>Child Name</th>
+                                <th style={thTdStyle}>Date of Birth</th>
+                                <th style={thTdStyle}>Classroom</th>
+                                <th style={thTdStyle}>Allergy Info</th>
+                                <th style={thTdStyle}>Notes</th>
                             </tr>
                         </thead>
                         <tbody>
                             {enrollments.map((enrollment, index) => (
                                 <tr key={index}>
-                                    <td>{enrollment.enrollment_start_date}</td>
-                                    <td>{enrollment.child_name}</td>
-                                    <td>{enrollment.date_of_birth}</td>
-                                    <td>{enrollment.classroom_name}</td>
-                                    <td>{enrollment.allergy_info || 'None'}</td>
-                                    <td>{enrollment.notes}</td>
+                                    <td style={thTdStyle}>{enrollment.enrollment_start_date}</td>
+                                    <td style={thTdStyle}>{enrollment.child_name}</td>
+                                    <td style={thTdStyle}>{enrollment.date_of_birth}</td>
+                                    <td style={thTdStyle}>{enrollment.classroom_name}</td>
+                                    <td style={thTdStyle}>{enrollment.allergy_info || 'None'}</td>
+                                    <td style={thTdStyle}>{enrollment.notes}</td>
                                 </tr>
                             ))}
                         </tbody>
@@ -105,24 +122,24 @@ const ChildMovementSummary: React.FC = () => {
             <section>
                 <h2>Upcoming Transitions</h2>
                 {transitions.length > 0 ? (
-                    <table>
+                    <table style={tableStyle}>
                         <thead>
                             <tr>
-                                <th>Transition Date</th>
-                                <th>Child Name</th>
-                                <th>Next Classroom</th>
-                                <th>Age at Transition</th>
-                                <th>Notes</th>
+                                <th style={thTdStyle}>Transition Date</th>
+                                <th style={thTdStyle}>Child Name</th>
+                                <th style={thTdStyle}>Next Classroom</th>
+                                <th style={thTdStyle}>Age at Transition</th>
+                                <th style={thTdStyle}>Notes</th>
                             </tr>
                         </thead>
                         <tbody>
                             {transitions.map((transition, index) => (
                                 <tr key={index}>
-                                    <td>{transition.transition_date}</td>
-                                    <td>{transition.child_name}</td>
-                                    <td>{transition.next_classroom_name}</td>
-                                    <td>{transition.age_at_transition}</td>
-                                    <td>{transition.notes}</td>
+                                    <td style={thTdStyle}>{transition.transition_date}</td>
+                                    <td style={thTdStyle}>{transition.child_name}</td>
+                                    <td style={thTdStyle}>{transition.next_classroom_name}</td>
+                                    <td style={thTdStyle}>{transition.age_at_transition}</td>
+                                    <td style={thTdStyle}>{transition.notes}</td>
                                 </tr>
                             ))}
                         </tbody>
@@ -136,24 +153,24 @@ const ChildMovementSummary: React.FC = () => {
             <section>
                 <h2>Upcoming Withdrawals</h2>
                 {withdrawals.length > 0 ? (
-                    <table>
+                    <table style={tableStyle}>
                         <thead>
                             <tr>
-                                <th>Withdrawal Date</th>
-                                <th>Child Name</th>
-                                <th>Reason</th>
-                                <th>Status</th>
-                                <th>Notes</th>
+                                <th style={thTdStyle}>Withdrawal Date</th>
+                                <th style={thTdStyle}>Child Name</th>
+                                <th style={thTdStyle}>Reason</th>
+                                <th style={thTdStyle}>Status</th>
+                                <th style={thTdStyle}>Notes</th>
                             </tr>
                         </thead>
                         <tbody>
                             {withdrawals.map((withdrawal, index) => (
                                 <tr key={index}>
-                                    <td>{withdrawal.withdrawal_date}</td>
-                                    <td>{withdrawal.child_name}</td>
-                                    <td>{withdrawal.reason}</td>
-                                    <td>{withdrawal.status}</td>
-                                    <td>{withdrawal.notes}</td>
+                                    <td style={thTdStyle}>{withdrawal.withdrawal_date}</td>
+                                    <td style={thTdStyle}>{withdrawal.child_name}</td>
+                                    <td style={thTdStyle}>{withdrawal.reason}</td>
+                                    <td style={thTdStyle}>{withdrawal.status}</td>
+                                    <td style={thTdStyle}>{withdrawal.notes}</td>
                                 </tr>
                             ))}
                         </tbody>
