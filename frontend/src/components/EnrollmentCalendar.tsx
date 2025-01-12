@@ -43,6 +43,7 @@ const EnrollmentCalendar = () => {
                 title: `${item.total_enrolled}/${item.total_capacity}`,
                 start: item.date,
                 color: item.total_enrolled === item.total_capacity ? "green" : "red",
+                is_weekday: item.is_weekday,
             }));
 
             setEvents(calendarEvents);
@@ -80,6 +81,14 @@ const EnrollmentCalendar = () => {
     // Handle date click
     const handleDateClick = (info) => {
         const clickedDate = info.dateStr;
+        
+        // Check if the selected date is a weekend
+        const selectedEvent = events.find((event) => event.start === selectedDate);
+        if (!selectedEvent || selectedEvent.is_weekday === false) {
+        alert("Attendance is not available for weekends."); // Optional feedback
+        return; // Exit the function early
+    }
+
         setSelectedDate(clickedDate);
         fetchClassroomsForDate(clickedDate);
         setView("day"); // Switch to day view
