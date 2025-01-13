@@ -262,7 +262,6 @@ def get_classrooms(request):
     classrooms = Classroom.objects.all().values('id', 'classroom_name')
     return Response(list(classrooms))
 
-from django.utils.timezone import now
 
 class WithdrawalViewSet(ModelViewSet):
     queryset = Withdrawal.objects.filter(withdrawal_date__gte=now().date())  # Exclude past withdrawals
@@ -327,6 +326,15 @@ class ChildrenDropdownListView(ListAPIView):
 class TransitionViewSet(ModelViewSet):
     queryset = Transition.objects.all()
     serializer_class = TransitionSerializer
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        future_only = self.request.query_params.get('future_only', None)
+        if future_only:
+            today = now().date()
+            queryset = queryset.filter(transition_date__gte=today)  # Filter by date
+        return queryset
+    
 
 class ChildrenListView(ListAPIView):
     queryset = Child.objects.all()

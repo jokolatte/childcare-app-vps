@@ -60,18 +60,20 @@ const TransitionsPage: React.FC = () => {
     
 
     useEffect(() => {
-        axios.get('http://127.0.0.1:8000/api/transitions/')
-            .then(response => {
+        axios
+            .get('http://127.0.0.1:8000/api/transitions/?future_only=true') // Add query param for future transitions
+            .then((response) => {
                 const fetchedTransitions = response.data.results || response.data;
                 // Sort transitions chronologically by transition_date
-                const sortedTransitions = fetchedTransitions.sort((a: Transition, b: Transition) => 
+                const sortedTransitions = fetchedTransitions.sort((a: Transition, b: Transition) =>
                     new Date(a.transition_date).getTime() - new Date(b.transition_date).getTime()
                 );
-                setTransitions(sortedTransitions);
+                setTransitions(sortedTransitions); // Set the sorted and filtered transitions
             })
-            .catch(error => console.error('Error fetching transitions:', error))
+            .catch((error) => console.error('Error fetching transitions:', error))
             .finally(() => setLoading(false));
     }, []);
+    
 
     // Fetch children
     useEffect(() => {

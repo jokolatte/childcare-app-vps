@@ -122,6 +122,8 @@ const EnrollmentCalendar = () => {
             currentDate.setDate(currentDate.getDate() + (direction === "next" ? 1 : -1));
             const newDate = currentDate.toISOString().split("T")[0];
             const event = events.find((e) => e.start === newDate);
+
+            
     
             if (event && (event.is_weekday || event.is_stat_holiday)) {
                 setSelectedDate(newDate);
