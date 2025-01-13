@@ -26,34 +26,42 @@ const EditChild: React.FC = () => {
     const [classrooms, setClassrooms] = useState<Classroom[]>([]);
     const [selectedChildId, setSelectedChildId] = useState<number | null>(null);
 
-    // Fetch the list of children and classrooms from the backend
+    // Fetch the list of children
     useEffect(() => {
         const fetchAllChildren = async () => {
-        let url = "http://127.0.0.1:8000/api/children/";
-        let allChildren = [];
-        try {
-        while (url) {
-        const response = await axios.get(url);
-        const data = response.data;
-        // Append results to allChildren
-        allChildren = [...allChildren, ...data.results];
-        // Update URL for the next page
-        url = data.next; // 'next' will be null when there are no more pages
-        }
-        console.log("Fetched all children:", allChildren);
-        // Filter children based on enrollment_end_date
-        const activeChildren = allChildren.filter((child) => {
-        return !child.enrollment_end_date || new Date(child.enrollment_end_date) > new Date();
-        });
-        console.log("Filtered children for dropdown:", activeChildren);
-        setChildren(activeChildren); // Update the state with filtered active children
-        } catch (error) {
-        console.error("Error fetching children:", error);
-        }
+            let url = "http://127.0.0.1:8000/api/children/";
+            let allChildren: Child[] = [];
+            try {
+                while (url) {
+                    const response = await axios.get(url);
+                    const data = response.data;
+                    allChildren = [...allChildren, ...data.results];
+                    url = data.next; // 'next' will be null when there are no more pages
+                }
+                const activeChildren = allChildren.filter(
+                    (child) =>
+                        !child.enrollment_end_date || new Date(child.enrollment_end_date) > new Date()
+                );
+                setChildren(activeChildren);
+            } catch (error) {
+                console.error("Error fetching children:", error);
+            }
         };
         fetchAllChildren();
-        }, []);
-    
+    }, []);
+
+    // Fetch the list of classrooms
+    useEffect(() => {
+        const fetchClassrooms = async () => {
+            try {
+                const response = await axios.get("http://127.0.0.1:8000/api/classrooms-list/");
+                setClassrooms(response.data);
+            } catch (error) {
+                console.error("Error fetching classrooms:", error);
+            }
+        };
+        fetchClassrooms();
+    }, []);
 
     // Fetch child details when a child is selected
     useEffect(() => {
@@ -78,7 +86,7 @@ const EditChild: React.FC = () => {
 
             axios
                 .put(`http://127.0.0.1:8000/api/children/${selectedChildId}/`, formattedData)
-                .then((response) => alert("Child updated successfully!"))
+                .then(() => alert("Child updated successfully!"))
                 .catch((error) => console.error("Error updating child:", error));
         } else {
             alert("Please select a child first.");
@@ -91,24 +99,24 @@ const EditChild: React.FC = () => {
 
             {/* Dropdown to select a child */}
             <div>
-    <label htmlFor="child">Select a Child:</label>
-    <Select
-        options={children.map((child) => ({
-            value: child.id,
-            label: `${child.first_name} ${child.last_name}`,
-        }))}
-        onChange={(selectedOption) =>
-            setSelectedChildId(selectedOption ? selectedOption.value : null)
-        }
-        value={children
-            .map((child) => ({
-                value: child.id,
-                label: `${child.first_name} ${child.last_name}`,
-            }))
-            .find((option) => option.value === selectedChildId) || null}
-        isClearable
-    />
-</div>
+                <label htmlFor="child">Select a Child:</label>
+                <Select
+                    options={children.map((child) => ({
+                        value: child.id,
+                        label: `${child.first_name} ${child.last_name}`,
+                    }))}
+                    onChange={(selectedOption) =>
+                        setSelectedChildId(selectedOption ? selectedOption.value : null)
+                    }
+                    value={children
+                        .map((child) => ({
+                            value: child.id,
+                            label: `${child.first_name} ${child.last_name}`,
+                        }))
+                        .find((option) => option.value === selectedChildId) || null}
+                    isClearable
+                />
+            </div>
 
             <form onSubmit={handleSubmit(onSubmit)} style={{ marginTop: "2rem" }}>
                 {/* First Name */}
@@ -144,26 +152,27 @@ const EditChild: React.FC = () => {
                     />
                 </div>
 
+                {/* Child Notes */}
                 <div>
-    <label>Child Notes</label>
-    <Controller
-        name="notes"
-        control={control}
-        defaultValue=""
-        render={({ field }) => <textarea {...field} />}
-    />
-</div>
+                    <label>Child Notes</label>
+                    <Controller
+                        name="notes"
+                        control={control}
+                        defaultValue=""
+                        render={({ field }) => <textarea {...field} />}
+                    />
+                </div>
 
-{/* Allergy Information */}
-<div>
-    <label>Allergy Information</label>
-    <Controller
-        name="allergy_info"
-        control={control}
-        defaultValue=""
-        render={({ field }) => <textarea {...field} />}
-    />
-</div>
+                {/* Allergy Information */}
+                <div>
+                    <label>Allergy Information</label>
+                    <Controller
+                        name="allergy_info"
+                        control={control}
+                        defaultValue=""
+                        render={({ field }) => <textarea {...field} />}
+                    />
+                </div>
 
                 {/* Classroom */}
                 <div>
@@ -182,17 +191,6 @@ const EditChild: React.FC = () => {
                                 ))}
                             </select>
                         )}
-                    />
-                </div>
-
-                {/* Notes */}
-                <div>
-                    <label>Notes</label>
-                    <Controller
-                        name="notes"
-                        control={control}
-                        defaultValue=""
-                        render={({ field }) => <textarea {...field} />}
                     />
                 </div>
 
