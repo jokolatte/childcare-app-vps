@@ -34,7 +34,41 @@ const TransitionsPage: React.FC = () => {
     const [notes, setNotes] = useState<string>('');
     const [editingTransitionId, setEditingTransitionId] = useState<number | null>(null);
 
-    // Fetch transitions
+    // Fetch children
+    useEffect(() => {
+        const fetchAllChildren = async () => {
+            let url = "http://127.0.0.1:8000/api/children/";
+            let allChildren = [];
+    
+            try {
+                while (url) {
+                    const response = await axios.get(url);
+                    const data = response.data;
+    
+                    // Append results to allChildren
+                    allChildren = [...allChildren, ...data.results];
+    
+                    // Update URL for the next page
+                    url = data.next; // 'next' will be null when there are no more pages
+                }
+    
+                console.log("Fetched all children:", allChildren);
+    
+                // Filter children based on enrollment_end_date
+                const activeChildren = allChildren.filter((child) => {
+                    return !child.enrollment_end_date || new Date(child.enrollment_end_date) > new Date();
+                });
+    
+                console.log("Filtered children for dropdown:", activeChildren);
+                setChildren(activeChildren); // Update the state with filtered active children
+            } catch (error) {
+                console.error("Error fetching children:", error);
+            }
+        };
+    
+        fetchAllChildren();
+    }, []);
+    
     
     
 
@@ -54,20 +88,7 @@ const TransitionsPage: React.FC = () => {
     }, []);
     
 
-    // Fetch children
-    useEffect(() => {
-        axios.get("http://127.0.0.1:8000/api/children/")
-            .then((response) => {
-                const allChildren = response.data.results || [];
-                // Filter children based on enrollment_end_date
-                const activeChildren = allChildren.filter((child) => {
-                    return !child.enrollment_end_date || new Date(child.enrollment_end_date) > new Date();
-                });
-                console.log("Filtered children for dropdown:", activeChildren);
-                setChildren(activeChildren);
-            })
-            .catch((error) => console.error("Error fetching children:", error));
-    }, []);
+    
     
 
     // Fetch classrooms
