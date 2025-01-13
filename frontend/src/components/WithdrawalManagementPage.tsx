@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Select from "react-select";
+import axios from "axios";
+
 
 const WithdrawalManagementPage = () => {
     const [children, setChildren] = useState([]);
@@ -16,26 +18,34 @@ const WithdrawalManagementPage = () => {
     // Fetch children for dropdown
     useEffect(() => {
         const fetchAllChildren = async () => {
+            let url = "http://127.0.0.1:8000/api/children/";
             let allChildren = [];
-            let url = "http://127.0.0.1:8000/api/children-list/";
-            
-            while (url) {
-                try {
-                    const response = await fetch(url);
-                    const data = await response.json();
+            try {
+                while (url) {
+                    const response = await axios.get(url);
+                    const data = response.data;
+                    // Append results to allChildren
                     allChildren = [...allChildren, ...data.results];
-                    url = data.next; // Set to the next page URL if available, else null
-                } catch (error) {
-                    console.error("Error fetching children:", error);
-                    break;
+                    // Update URL for the next page
+                    url = data.next; // 'next' will be null when there are no more pages
                 }
-            }
+                console.log("Fetched all children:", allChildren);
     
-            setChildren(allChildren);
+                // Filter children based on enrollment_end_date
+                const activeChildren = allChildren.filter((child) => {
+                    return !child.enrollment_end_date || new Date(child.enrollment_end_date) > new Date();
+                });
+                console.log("Filtered children for dropdown:", activeChildren);
+    
+                setChildren(activeChildren); // Update the state with filtered active children
+            } catch (error) {
+                console.error("Error fetching children:", error);
+            }
         };
     
         fetchAllChildren();
     }, []);
+    
     
 
     // Fetch withdrawals for display
