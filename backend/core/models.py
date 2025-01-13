@@ -68,7 +68,7 @@ class Child(models.Model):
     last_name = models.CharField(max_length=100)
     date_of_birth = models.DateField()
     enrollment_start_date = models.DateField()
-    enrollment_end_date = models.DateField(null=True, blank=True)  # New field
+    enrollment_end_date = models.DateField(null=True, blank=True)  
     classroom = models.ForeignKey(
         "Classroom",
         on_delete=models.SET_NULL,

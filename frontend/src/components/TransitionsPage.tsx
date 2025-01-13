@@ -35,28 +35,7 @@ const TransitionsPage: React.FC = () => {
     const [editingTransitionId, setEditingTransitionId] = useState<number | null>(null);
 
     // Fetch transitions
-    useEffect(() => {
-        const fetchAllChildren = async () => {
-            let allChildren = [];
-            let url = "http://127.0.0.1:8000/api/children-list/";
-            
-            while (url) {
-                try {
-                    const response = await fetch(url);
-                    const data = await response.json();
-                    allChildren = [...allChildren, ...data.results];
-                    url = data.next; // Set to the next page URL if available, else null
-                } catch (error) {
-                    console.error("Error fetching children:", error);
-                    break;
-                }
-            }
     
-            setChildren(allChildren);
-        };
-    
-        fetchAllChildren();
-    }, []);
     
 
     useEffect(() => {
@@ -77,10 +56,19 @@ const TransitionsPage: React.FC = () => {
 
     // Fetch children
     useEffect(() => {
-        axios.get('http://127.0.0.1:8000/api/children/dropdown/')
-            .then(response => setChildren(response.data.results || []))
-            .catch(error => console.error('Error fetching children:', error));
+        axios.get("http://127.0.0.1:8000/api/children/")
+            .then((response) => {
+                const allChildren = response.data.results || [];
+                // Filter children based on enrollment_end_date
+                const activeChildren = allChildren.filter((child) => {
+                    return !child.enrollment_end_date || new Date(child.enrollment_end_date) > new Date();
+                });
+                console.log("Filtered children for dropdown:", activeChildren);
+                setChildren(activeChildren);
+            })
+            .catch((error) => console.error("Error fetching children:", error));
     }, []);
+    
 
     // Fetch classrooms
     useEffect(() => {
