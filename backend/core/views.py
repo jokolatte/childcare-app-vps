@@ -18,6 +18,7 @@ from .serializers import ChildSerializer, FamilySerializer
 from django.shortcuts import get_object_or_404
 from datetime import date, timedelta
 from django.utils.timezone import now
+from rest_framework.pagination import PageNumberPagination
 
 @api_view(['GET'])
 def upcoming_enrollments(request):
@@ -385,6 +386,7 @@ class FamiliesListView(APIView):
         families = Family.objects.all()
         serializer = FamilySerializer(families, many=True)
         return Response(serializer.data)
+        pagination_class = None
 
 # CRUD views for Family
 class FamilyListCreateView(generics.ListCreateAPIView):
