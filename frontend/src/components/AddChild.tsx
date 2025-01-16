@@ -30,16 +30,50 @@ const AddChild: React.FC = () => {
             .then((response) => setClassrooms(response.data))
             .catch((error) => console.error("Error fetching classrooms:", error));
 
-        axios
-            .get("http://127.0.0.1:8000/api/families-list/")
-            .then((response) => {
-                const formattedFamilies = response.data.map((family: Family) => ({
-                    value: family.id,
-                    label: family.parent_1_name,
-                }));
-                setFamilies(formattedFamilies);
-            })
-            .catch((error) => console.error("Error fetching families:", error));
+            const fetchFamiliesAndChildren = async () => {
+                try {
+                    // Fetch families
+                    const familiesResponse = await axios.get("http://127.0.0.1:8000/api/families-list/");
+                    const allFamilies = familiesResponse.data; // Ensure this is an array
+                    console.log("Fetched Families:", allFamilies);
+        
+                    // Fetch children (handle pagination)
+                    const allChildren = [];
+                    let childrenResponse = await axios.get("http://127.0.0.1:8000/api/children/");
+                    allChildren.push(...childrenResponse.data.results);
+        
+                    // Fetch additional pages if they exist
+                    while (childrenResponse.data.next) {
+                        childrenResponse = await axios.get(childrenResponse.data.next);
+                        allChildren.push(...childrenResponse.data.results);
+                    }
+                    console.log("Fetched Children:", allChildren);
+        
+                    // Filter families with at least one active child
+                    const activeFamilies = allFamilies.filter((family) =>
+                        allChildren.some(
+                            (child) =>
+                                child.family === family.id &&
+                                (!child.enrollment_end_date || new Date(child.enrollment_end_date) > new Date())
+                        )
+                    );
+                    console.log("Active Families:", activeFamilies);
+        
+                    // Format families for the dropdown
+                    const formattedFamilies = activeFamilies.map((family) => ({
+                        value: family.id,
+                        label: family.parent_1_name,
+                    }));
+        
+                    setFamilies(formattedFamilies); // Update dropdown options
+                    setLoading(false); // Stop loading indicator
+                } catch (error) {
+                    console.error("Error fetching families or children:", error);
+                    setLoading(false); // Stop loading indicator in case of error
+                }
+            };
+        
+            fetchFamiliesAndChildren();
     }, []);
 
     // Handle form submission

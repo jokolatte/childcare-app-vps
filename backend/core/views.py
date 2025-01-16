@@ -12,7 +12,7 @@ from rest_framework.decorators import api_view
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
 from rest_framework import status
-from django.db.models import Q
+from django.db.models import Q, Exists, OuterRef
 from datetime import datetime
 from .serializers import ChildSerializer, FamilySerializer
 from django.shortcuts import get_object_or_404
@@ -387,6 +387,7 @@ class FamiliesListView(APIView):
         serializer = FamilySerializer(families, many=True)
         return Response(serializer.data)
         pagination_class = None
+    
 
 # CRUD views for Family
 class FamilyListCreateView(generics.ListCreateAPIView):
